@@ -1,4 +1,5 @@
-﻿using AnagramSolver.BusinessLogic;
+﻿using AnagramSolver.BuisnessLogic;
+using AnagramSolver.BusinessLogic;
 using AnagramSolver.Contracts;
 using System;
 using System.Collections.Generic;
@@ -18,7 +19,8 @@ namespace AnagramSolver.Cli
         {
             _filePath = filePath;
             _settings = settings;
-            _processor = new WordProcessor();
+            IAnagramSearchEngine searchEngine = new AnagramSearchEngine();
+            _processor = new WordProcessor(searchEngine);
             _loader = new DictionaryLoader();
         }
 
@@ -51,28 +53,16 @@ namespace AnagramSolver.Cli
                     {
                         Console.WriteLine($"Klaida: Zodis per trumpas!");
                     }
-                }
+                }           
 
-                if (string.IsNullOrEmpty(input))
-                {
-                    break;
-                }
-
-                List<Anagram> anagrams = _processor.GetAnagrams(input);
+                List<Anagram> anagrams = _processor.GetAnagrams(input, _settings.MaxAnagramsToShow);
                 if (anagrams.Any())
                 {
                     Console.WriteLine($"Zodzio {input} anagramos: ");
                     foreach (var anagram in anagrams)
                     {
-                        if (anagram.Word != input && anagramCount < _settings.MaxAnagramsToShow)
-                        {
-                            Console.WriteLine($"- {anagram.Word}");
+                            Console.WriteLine(anagram.Word);
                             anagramCount++;
-                        }
-                    }
-                    if (anagramCount == 0)
-                    {
-                        Console.WriteLine("Zodine rastas tik ivestas zodis su sutampanciom raidem.");
                     }
                 }
                 else
@@ -80,7 +70,6 @@ namespace AnagramSolver.Cli
                     Console.WriteLine($"Anagramu zodziui {input} nera.");
                 }
             }
-            Console.WriteLine("Viso gero!");
         }
     }
 }

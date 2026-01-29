@@ -8,7 +8,7 @@ namespace AnagramSolver.Contracts
 {
     public interface IWordProcessor
     {
-        List<Anagram> GetAnagrams(string input);
+        List<Anagram> GetAnagrams(string input, int maxAnagramsToShow);
         void AddWord(string word);
     }
 }
