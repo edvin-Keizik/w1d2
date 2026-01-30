@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AnagramSolver.BuisnessLogic\AnagramSolver.BuisnessLogic.csproj" />
+    <ProjectReference Include="..\AnagramSolver.BuisnessLogic\AnagramSolver.BusinessLogic.csproj" />
     <ProjectReference Include="..\AnagramSolver.Contracts\AnagramSolver.Contracts.csproj" />
   </ItemGroup>
 

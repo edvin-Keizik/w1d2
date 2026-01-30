@@ -1,5 +1,6 @@
 <Solution>
-  <Project Path="AnagramSolver.BuisnessLogic/AnagramSolver.BuisnessLogic.csproj" />
+  <Project Path="AnagramSolver.BuisnessLogic.Tests/AnagramSolver.BusinessLogic.Tests.csproj" />
+  <Project Path="AnagramSolver.BuisnessLogic/AnagramSolver.BusinessLogic.csproj" />
   <Project Path="AnagramSolver.Cli/AnagramSolver.Cli.csproj" />
   <Project Path="AnagramSolver.Contracts/AnagramSolver.Contracts.csproj" />
 </Solution>

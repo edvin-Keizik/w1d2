@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AnagramSolver.BuisnessLogic
+namespace AnagramSolver.BusinessLogic
 {
     public class AnagramSearchEngine : IAnagramSearchEngine
     {
