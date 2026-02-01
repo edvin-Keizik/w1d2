@@ -1,14 +1,23 @@
-﻿using AnagramSolver.Contracts;
+﻿using AnagramSolver.BusinessLogic;
+using AnagramSolver.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
+using System.Security;
+using System.Text;
 
 namespace AnagramSolver.BusinessLogic
 {
     public class WordProcessor : IWordProcessor
     {
-        private Dictionary<string, List<string>> _wordGroups = new Dictionary<string, List<string>>();
+        private readonly Dictionary<string, List<string>> _wordGroups = new();
+        private readonly IAnagramSearchEngine _searchEngine;
 
+        public WordProcessor(IAnagramSearchEngine searchEngine)
+        {
+            _searchEngine = searchEngine;
+        }
         public void AddWord(string word)
         {
             string signature = GetSignature(word.ToLower());
@@ -35,29 +44,49 @@ namespace AnagramSolver.BusinessLogic
 
             return new string(wordArray);
         }
-
-        public List<Anagram> GetAnagrams(string input)
+        private List<string> GetCandidatesKeys(string letterBank)
         {
-            string[] words = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            
-            List<Anagram> result = new List<Anagram>();
+            var candidates = new List<string>();
 
-            foreach (string word in words)
+            foreach(var signature in _wordGroups.Keys)
             {
-                string signature = GetSignature(word.ToLower());
+                if (signature.Length > letterBank.Length) continue;
 
-                if (_wordGroups.ContainsKey(signature))
+                if(_searchEngine.CanSubstract(letterBank, signature, out _))
                 {
-                    var firstMatch = _wordGroups[signature].First();
-                    result.Add(new Anagram { Word = firstMatch});
-                }
-                else
-                {
-                    result.Add(new Anagram { Word = $"[Nera anagramos zodziui {word}"});
+                    candidates.Add(signature);
                 }
             }
-            return result;
+            return candidates.OrderByDescending(s => s.Length).ToList();
+        }
 
+
+        public List<Anagram> GetAnagrams(string input, int maxAnagramsToShow, int minWordLength)
+        {
+            string letterBank = GetSignature(input.Replace(" ", "").ToLower());
+            var originalWords = input.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            List<string> candidates = GetCandidatesKeys(letterBank);
+
+            for(int i = maxAnagramsToShow; i>= 1; i--)
+            {
+                List<List<string>> allResults = new List<List<string>>();
+                _searchEngine.FindAllCombinations(letterBank, i, new List<string>(), candidates, _wordGroups, allResults, originalWords);
+
+                var filteredResults = allResults
+                    .Where(combinations => combinations.All(word => word.Length >= minWordLength))
+                    .ToList();
+
+                if (filteredResults.Any())
+                {
+                    return allResults
+                        .Select(combination => new Anagram { Word = string.Join(" ", combination) })
+                        .ToList();
+                }
+                
+            }
+
+            return new List<Anagram>();
         }
     }
 }
