@@ -61,19 +61,23 @@ namespace AnagramSolver.BusinessLogic
         }
 
 
-        public List<Anagram> GetAnagrams(string input, int maxAnagramsToShow)
+        public List<Anagram> GetAnagrams(string input, int maxAnagramsToShow, int minWordLength)
         {
             string letterBank = GetSignature(input.Replace(" ", "").ToLower());
             var originalWords = input.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
             List<string> candidates = GetCandidatesKeys(letterBank);
-            List<List<string>> allResults = new List<List<string>>();
 
             for(int i = maxAnagramsToShow; i>= 1; i--)
             {
+                List<List<string>> allResults = new List<List<string>>();
                 _searchEngine.FindAllCombinations(letterBank, i, new List<string>(), candidates, _wordGroups, allResults, originalWords);
 
-                if (allResults.Any())
+                var filteredResults = allResults
+                    .Where(combinations => combinations.All(word => word.Length >= minWordLength))
+                    .ToList();
+
+                if (filteredResults.Any())
                 {
                     return allResults
                         .Select(combination => new Anagram { Word = string.Join(" ", combination) })

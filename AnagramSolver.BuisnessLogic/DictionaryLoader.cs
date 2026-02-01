@@ -7,22 +7,22 @@ namespace AnagramSolver.BusinessLogic
 {
     public class DictionaryLoader : IDictionaryLoader
     {
+        private readonly IFileSystemWrapper _fileSystem;
+
+        public DictionaryLoader(IFileSystemWrapper fileSystem)
+        {
+            _fileSystem = fileSystem;
+        }
         public void LoadWords(string path, IWordProcessor processor)
         {
             try
             {
-                using (StreamReader reader = new StreamReader(path, Encoding.UTF8))
+                foreach(var line in _fileSystem.ReadLines(path))
                 {
-                    string? line;
-
-                    while ((line = reader.ReadLine()) != null)
+                    string word = line.Trim();
+                    if(!string.IsNullOrEmpty(word))
                     {
-                        string word = line.Trim();
-
-                        if (!string.IsNullOrEmpty(word))
-                        {
-                            processor.AddWord(word);
-                        }
+                        processor.AddWord(word);
                     }
                 }
             }

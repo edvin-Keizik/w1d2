@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AnagramSolver.Contracts
+﻿namespace AnagramSolver.Contracts
 {
     public interface IWordProcessor
     {
-        List<Anagram> GetAnagrams(string input, int maxAnagramsToShow);
+        List<Anagram> GetAnagrams(string input, int maxAnagramsToShow, int minWordLength);
         void AddWord(string word);
     }
 }

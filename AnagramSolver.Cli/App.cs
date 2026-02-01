@@ -1,9 +1,5 @@
-﻿using AnagramSolver.BuisnessLogic;
-using AnagramSolver.BusinessLogic;
+﻿using AnagramSolver.BusinessLogic;
 using AnagramSolver.Contracts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace AnagramSolver.Cli
 {
@@ -13,25 +9,27 @@ namespace AnagramSolver.Cli
         private readonly IWordProcessor _processor;
         private readonly IDictionaryLoader _loader;
         private readonly AnagramSettings _settings;
+        private readonly IUserInputOutput _ui;
 
 
-        public App(string filePath, AnagramSettings settings)
+        public App(string filePath,
+            AnagramSettings settings,
+            IWordProcessor processor,
+            IDictionaryLoader loader,
+            IUserInputOutput ui)
         {
             _filePath = filePath;
             _settings = settings;
-            IAnagramSearchEngine searchEngine = new AnagramSearchEngine();
-            _processor = new WordProcessor(searchEngine);
-            _loader = new DictionaryLoader();
+            _processor = processor;
+            _loader = loader;
+            _ui = ui;
         }
 
         public void Run()
         {
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-            Console.InputEncoding = System.Text.Encoding.UTF8;
-
-            Console.WriteLine("Atsisiunciamas zodynas");
+            _ui.WriteLine("Atsisiunciamas zodynas");
             _loader.LoadWords(_filePath, _processor);
-            Console.WriteLine("Zodynas atsiustas. Ivesti 0 kad baigti.");
+            _ui.WriteLine("Zodynas atsiustas. Ivesti 0 kad baigti.");
 
             while (true)
             {
@@ -41,8 +39,8 @@ namespace AnagramSolver.Cli
 
                 while (!lengthCheck)
                 {
-                    Console.WriteLine("\nIveskite zodi kurio anagramas norite suzinot(bent 3 raides): ");
-                    input = Console.ReadLine()?.Trim() ?? "";
+                    _ui.WriteLine("\nIveskite zodi kurio anagramas norite suzinot(bent 3 raides): ");
+                    input = _ui.ReadLine()?.Trim() ?? "";
                     if (input == "0") return;
 
                     if (input.Length >= _settings.MinWordLength)
@@ -51,23 +49,23 @@ namespace AnagramSolver.Cli
                     }
                     else
                     {
-                        Console.WriteLine($"Klaida: Zodis per trumpas!");
+                        _ui.WriteLine($"Klaida: Zodis per trumpas!");
                     }
                 }           
 
-                List<Anagram> anagrams = _processor.GetAnagrams(input, _settings.MaxAnagramsToShow);
+                List<Anagram> anagrams = _processor.GetAnagrams(input, _settings.MaxAnagramsToShow, _settings.MinWordLength);
                 if (anagrams.Any())
                 {
-                    Console.WriteLine($"Zodzio {input} anagramos: ");
+                    _ui.WriteLine($"Zodzio {input} anagramos: ");
                     foreach (var anagram in anagrams)
                     {
-                            Console.WriteLine(anagram.Word);
+                            _ui.WriteLine(anagram.Word);
                             anagramCount++;
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"Anagramu zodziui {input} nera.");
+                    _ui.WriteLine($"Anagramu zodziui {input} nera.");
                 }
             }
         }
