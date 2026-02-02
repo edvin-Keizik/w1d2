@@ -22,7 +22,7 @@ namespace AnagramSolver.Cli.Tests
                 .Returns("0");
 
             var expectedAnagrams = new List<Anagram> { new Anagram { Word = "alsu" } };
-            mockProcessor.Setup(p => p.GetAnagrams("alus", 1))
+            mockProcessor.Setup(p => p.GetAnagrams("alus", 1, 3))
                          .Returns(expectedAnagrams);
 
             var app = new App("fakePath.txt", settings, mockProcessor.Object, mockLoader.Object, mockUI.Object);
@@ -59,7 +59,7 @@ namespace AnagramSolver.Cli.Tests
             // Assert
             mockUI.Verify(u => u.WriteLine(It.Is<string>(s => s.Contains("per trumpas"))), Times.Once);
 
-            mockProcessor.Verify(p => p.GetAnagrams(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+            mockProcessor.Verify(p => p.GetAnagrams(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace AnagramSolver.Cli.Tests
 
             mockUI.SetupSequence(u => u.ReadLine()).Returns("ąžuolas").Returns("0");
 
-            mockProcessor.Setup(p => p.GetAnagrams("ąžuolas", It.IsAny<int>()))
+            mockProcessor.Setup(p => p.GetAnagrams("ąžuolas", It.IsAny<int>(), It.IsAny<int>()))
                          .Returns(new List<Anagram>());
 
             var app = new App(
