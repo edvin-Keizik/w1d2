@@ -33,11 +33,6 @@ namespace AnagramSolver.WebApp.Controllers
                 var anagrams = _processor.GetAnagrams(model.InputWord, _settings.MaxAnagramsToShow, _settings.MinWordLength);
                 model.Result = anagrams.Select(a => a.Word).ToList();
             }
-            if (model.InputWord.Length > _settings.MinWordLength)
-            {
-                var anagrams = _processor.GetAnagrams(model.InputWord, _settings.MaxAnagramsToShow, _settings.MinWordLength);
-                model.Result = anagrams.Select(a => a.Word).ToList();
-            }
             return View(model);
         }
     }
