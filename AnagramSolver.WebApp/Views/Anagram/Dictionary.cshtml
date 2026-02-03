@@ -1,0 +1,52 @@
+﻿@model List<string>
+
+@{
+    ViewData["Title"] = "Žodynas";
+    int wordsPerColumn = 30;
+}
+
+<h3 class="mb-4">Žodynas (Puslapis @ViewBag.CurrentPage)</h3>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+<div class="container">
+    <div class="row">
+        @for (int i = 0; i < 3; i++)
+        {
+            <div class="col-md-4">
+                <ul class="list-group list-group-flush">
+                    @foreach (var word in Model.Skip(i * wordsPerColumn).Take(wordsPerColumn))
+                    {
+                        <li class="list-group-item py-1">
+                            <a asp-action="Index" asp-route-InputWord="@word" class="text-decoration-none">
+                                @word
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
+</div>
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        @if (ViewBag.CurrentPage > 1)
+        {
+            <li class="page-item">
+                <a class="page-link" asp-action="Dictionary" asp-route-page="@(ViewBag.CurrentPage - 1)">Atgal</a>
+            </li>
+        }
+
+        <li class="page-item disabled"><span class="page-link">@ViewBag.CurrentPage / @ViewBag.TotalPages</span></li>
+
+        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+        {
+            <li class="page-item">
+                <a class="page-link" asp-action="Dictionary" asp-route-page="@(ViewBag.CurrentPage + 1)">Pirmyn</a>
+            </li>
+        }
+    </ul>
+</nav>

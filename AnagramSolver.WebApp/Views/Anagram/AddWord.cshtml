@@ -1,0 +1,26 @@
+﻿@using AnagramSolver.WebApp.ViewModels
+@model AnagramViewModel
+
+@{
+    ViewData["Title"] = "Prideti zodi";
+}
+
+<h3 class="mb-4">Prideti zodi prie zodyno</h3>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        @if (ViewBag.ErrorMessage != null)
+            {
+                <div class="alert alert-danger">
+                    @ViewBag.ErrorMessage
+                </div>
+            }
+        <form asp-controller="Anagram" asp-action="AddWord" method="post">
+            <div class="form-group mb-3">
+                <label asp-for="InputWord" class="form-label">Tavo zodis:</label>
+                <input asp-for="InputWord" class="form-control" placeholder="Iveskite nauja zodi..." required />
+            </div>
+            <button type="submit" class="btn btn-success w-100">Prideti i zodyna</button>
+        </form>
+    </div>
+</div>

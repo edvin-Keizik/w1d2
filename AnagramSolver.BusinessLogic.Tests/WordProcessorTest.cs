@@ -67,6 +67,37 @@ namespace AnagramSolver.BusinessLogic.Tests
                 It.IsAny<IEnumerable<string>>()
             ), Times.Once);
         }
+        [Fact]
+        public void AddWord_WhenWordExist_SkipWord()
+        {
+            // Arrange
+            var mockEngine = new Mock<IAnagramSearchEngine>();
+            var processor = new WordProcessor(mockEngine.Object);
+            string testWord = "alus";
+            string signature = "alsu";
+            string egzistingWord = "alus";
+
+            // Act
+            processor.AddWord(egzistingWord);
+            processor.AddWord(testWord);
+
+            // Assert
+            processor.GetAnagrams(testWord, 1, 3);
+
+            mockEngine.Verify(e => e.FindAllCombinations(
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<List<string>>(),
+                It.IsAny<List<string>>(),
+                It.Is<Dictionary<string, List<string>>>(dict =>
+            dict.ContainsKey(signature) &&
+            dict[signature].Count == 1 &&
+            dict[signature].Contains(egzistingWord)
+            ),
+                It.IsAny<List<List<string>>>(),
+                It.IsAny<IEnumerable<string>>()
+            ), Times.Once);
+        }
 
         [Fact]
         public void GetSignature_CheckIfReturnSorrtedLetters()

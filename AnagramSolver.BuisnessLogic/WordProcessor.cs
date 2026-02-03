@@ -18,22 +18,26 @@ namespace AnagramSolver.BusinessLogic
         {
             _searchEngine = searchEngine;
         }
-        public void AddWord(string word)
+        public bool AddWord(string word)
         {
             string signature = GetSignature(word.ToLower());
-
-            if (_wordGroups.ContainsKey(signature))
+            if (!_wordGroups.ContainsKey(signature))
             {
-                _wordGroups[signature].Add(word);
+                _wordGroups[signature] = new List<string>();
+            }
+            if (_wordGroups[signature].Contains(word))
+            {
+                return false;
             }
 
-            else
-            {
-                List<string> newWordList = new List<string>();
-                newWordList.Add(word);
+            _wordGroups[signature].Add(word);      
+            return true;
+        }
 
-                _wordGroups.Add(signature, newWordList);
-            }
+        public List<string> GetDictionary()
+        {
+            List<string> words = _wordGroups.Values.SelectMany(list => list).ToList();
+            return words; 
         }
 
         private string GetSignature(string word)
