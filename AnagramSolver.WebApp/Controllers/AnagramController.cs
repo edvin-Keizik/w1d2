@@ -18,9 +18,18 @@ namespace AnagramSolver.WebApp.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Index(string? InputWord)
         {
-            return View(new AnagramViewModel());
+            var model = new AnagramViewModel();
+
+            if (!string.IsNullOrEmpty(InputWord))
+            {
+                model.InputWord = InputWord;
+
+                var anagrams = _processor.GetAnagrams(InputWord, _settings.MaxAnagramsToShow, _settings.MinWordLength);
+                model.Result = anagrams.Select(a => a.Word).ToList();
+            }
+            return View(model);
         }
 
         [HttpPost]
@@ -28,12 +37,52 @@ namespace AnagramSolver.WebApp.Controllers
         {
             if (model.InputWord != null && model.InputWord.Length >= _settings.MinWordLength)
             {
-                _loader.LoadWords(_settings.FilePath, _processor);
-
                 var anagrams = _processor.GetAnagrams(model.InputWord, _settings.MaxAnagramsToShow, _settings.MinWordLength);
                 model.Result = anagrams.Select(a => a.Word).ToList();
             }
             return View(model);
+        }
+
+        public IActionResult Dictionary(int page = 1)
+        {
+            int pageSize = 90;
+
+            var allWords = _processor.GetDictionary();
+
+            var peginateWords = allWords
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)allWords.Count / pageSize);
+
+            return View(peginateWords);
+        }
+
+        [HttpGet]
+        public IActionResult AddWord()
+        {
+            return View(new AnagramViewModel());
+        }
+
+        [HttpPost]
+        public IActionResult AddWord(AnagramViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.InputWord)) return View(model);
+
+            if (_processor.AddWord(model.InputWord))
+            {
+                System.IO.File.AppendAllLines(_settings.FilePath, new[] { model.InputWord });
+                TempData["SuccessMessage"] = $"Zodis '{model.InputWord}' sekmingai pridetas!";
+                return RedirectToAction("Dictionary");
+            }
+            else
+            {
+                ViewBag.ErrorMessage = "Sis zodis jau yra zodyne!";
+                return View(model);
+            }                
+
         }
     }
 }
