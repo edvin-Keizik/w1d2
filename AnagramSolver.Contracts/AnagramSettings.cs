@@ -4,5 +4,6 @@
     {
         public int MinWordLength {  get; set; }
         public int MaxAnagramsToShow { get; set; }
+        public string FilePath { get; set; } = string.Empty;
     }
 }

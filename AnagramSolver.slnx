@@ -4,4 +4,5 @@
   <Project Path="AnagramSolver.Cli.Tests/AnagramSolver.Cli.Tests.csproj" Id="d9fbc0c1-4a40-48b1-9dd0-259ff1f32648" />
   <Project Path="AnagramSolver.Cli/AnagramSolver.Cli.csproj" />
   <Project Path="AnagramSolver.Contracts/AnagramSolver.Contracts.csproj" />
+  <Project Path="AnagramSolver.WebApp/AnagramSolver.WebApp.csproj" Id="67907e93-fb75-4630-913c-208a7f3ebed2" />
 </Solution>
