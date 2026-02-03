@@ -17,7 +17,9 @@ namespace AnagramSolver.BusinessLogic
         {
             try
             {
-                foreach(var line in _fileSystem.ReadLines(path))
+                var absolutePath = Path.GetFullPath(path);
+                System.Diagnostics.Debug.WriteLine($"Looking for dictionary at: {absolutePath}");
+                foreach (var line in _fileSystem.ReadLines(path))
                 {
                     string word = line.Trim();
                     if(!string.IsNullOrEmpty(word))

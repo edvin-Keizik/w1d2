@@ -1,0 +1,43 @@
+﻿@using AnagramSolver.WebApp.ViewModels
+@model AnagramViewModel
+
+@{
+    ViewData["Title"] = "Anagram Solver";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Anagram Solver</h1>
+    <p>Iveskite zodi, kad rasti jo anagramas.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <form asp-controller="Anagram" asp-action="Index" method="post">
+            <div class="form-group mb-3">
+                <label asp-for="InputWord" class="form-label">Tavo zodis:</label>
+                <input asp-for="InputWord" class="form-control" placeholder="pvz. alus" />
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Ieskoti</button>
+        </form>
+
+        <hr />
+        @if(Model.Result != null && Model.Result.Any())
+        {
+            <div class="mt-4">
+                <h3>Rastos anagramos:</h3>
+                <ul class="list-group">
+                    @foreach (var result in Model.Result)
+                    {
+                        <li class="list-group-item">@result</li>
+                    }
+                </ul>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(Model.InputWord))
+        {
+            <div class="alert alert-warning mt-4">
+                Anagramų žodžiui "<strong>@Model.InputWord</strong>" nerasta.
+            </div>
+        }
+    </div>
+</div>
