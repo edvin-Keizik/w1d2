@@ -25,10 +25,10 @@ namespace AnagramSolver.Cli
             _ui = ui;
         }
 
-        public void Run()
+        public async Task Run(CancellationToken ct)
         {
             _ui.WriteLine("Atsisiunciamas zodynas");
-            _loader.LoadWords(_filePath, _processor);
+            await _loader.LoadWordsAsync(_filePath, _processor);
             _ui.WriteLine("Zodynas atsiustas. Ivesti 0 kad baigti.");
 
             while (true)
@@ -53,7 +53,8 @@ namespace AnagramSolver.Cli
                     }
                 }           
 
-                List<Anagram> anagrams = _processor.GetAnagrams(input, _settings.MaxAnagramsToShow, _settings.MinWordLength);
+                IEnumerable<Anagram> anagrams = await _processor
+                    .GetAnagramsAsync(input, _settings.MaxAnagramsToShow, _settings.MinWordLength, ct);
                 if (anagrams.Any())
                 {
                     _ui.WriteLine($"Zodzio {input} anagramos: ");

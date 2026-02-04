@@ -13,13 +13,11 @@ namespace AnagramSolver.BusinessLogic
         {
             _fileSystem = fileSystem;
         }
-        public void LoadWords(string path, IWordProcessor processor)
+        public async Task LoadWordsAsync(string path, IWordProcessor processor)
         {
             try
             {
-                var absolutePath = Path.GetFullPath(path);
-                System.Diagnostics.Debug.WriteLine($"Looking for dictionary at: {absolutePath}");
-                foreach (var line in _fileSystem.ReadLines(path))
+                await foreach (var line in _fileSystem.ReadLinesAsync(path))
                 {
                     string word = line.Trim();
                     if(!string.IsNullOrEmpty(word))

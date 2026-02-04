@@ -6,8 +6,11 @@ namespace AnagramSolver.Cli
 {
     class Program
     {
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
+            using var cts = new CancellationTokenSource();
+            var ct = cts.Token;
+
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             Console.InputEncoding = System.Text.Encoding.UTF8;
 
@@ -23,7 +26,7 @@ namespace AnagramSolver.Cli
             IUserInputOutput ui = new ConsoleUI();
 
             App myApp = new App(path, settings, processor, loader, ui);
-            myApp.Run();
+            await myApp.Run(ct);
         }
     }
 }

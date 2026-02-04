@@ -48,49 +48,61 @@ namespace AnagramSolver.BusinessLogic
 
             return new string(wordArray);
         }
-        private List<string> GetCandidatesKeys(string letterBank)
+        private async Task<List<string>> GetCandidatesKeysAsync(string letterBank)
         {
-            var candidates = new List<string>();
-
-            foreach(var signature in _wordGroups.Keys)
+            return await Task.Run(() =>
             {
-                if (signature.Length > letterBank.Length) continue;
+                var candidates = new List<string>();
 
-                if(_searchEngine.CanSubstract(letterBank, signature, out _))
+                foreach (var signature in _wordGroups.Keys)
                 {
-                    candidates.Add(signature);
+                    if (signature.Length > letterBank.Length) continue;
+
+                    if (_searchEngine.CanSubstract(letterBank, signature, out _))
+                    {
+                        candidates.Add(signature);
+                    }
                 }
-            }
-            return candidates.OrderByDescending(s => s.Length).ToList();
+                return candidates.OrderByDescending(s => s.Length).ToList();
+            });
         }
 
 
-        public List<Anagram> GetAnagrams(string input, int maxAnagramsToShow, int minWordLength)
+        public async Task<IEnumerable<Anagram>> GetAnagramsAsync(string input, int maxAnagramsToShow, int minWordLength, CancellationToken ct = default)
         {
+            ct.ThrowIfCancellationRequested();
+
             string letterBank = GetSignature(input.Replace(" ", "").ToLower());
             var originalWords = input.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            List<string> candidates = GetCandidatesKeys(letterBank);
+            var candidates = await GetCandidatesKeysAsync(letterBank);
 
-            for(int i = maxAnagramsToShow; i>= 1; i--)
+            var searchTasks = Enumerable.Range(1, maxAnagramsToShow).Select(i =>
             {
-                List<List<string>> allResults = new List<List<string>>();
-                _searchEngine.FindAllCombinations(letterBank, i, new List<string>(), candidates, _wordGroups, allResults, originalWords);
-
-                var filteredResults = allResults
-                    .Where(combinations => combinations.All(word => word.Length >= minWordLength))
-                    .ToList();
-
-                if (filteredResults.Any())
+                return Task.Run(() =>
                 {
-                    return allResults
-                        .Select(combination => new Anagram { Word = string.Join(" ", combination) })
-                        .ToList();
-                }
-                
-            }
+                    var resultsForThisCount = new List<List<string>>();
+                    _searchEngine.FindAllCombinations(
+                        letterBank,
+                        i,
+                        new List<string>(),
+                        candidates,
+                        _wordGroups,
+                        resultsForThisCount,
+                        originalWords);
+                    return resultsForThisCount;
+                }, ct);
+            });
 
-            return new List<Anagram>();
+            var allTaskResults = await Task.WhenAll(searchTasks);
+
+            var finalResults = allTaskResults
+                .SelectMany(list => list)
+                .Where(combination => combination.All(word => word.Length >= minWordLength))
+                .Select(combination => new Anagram { Word = string.Join(" ", combination) })
+                .ToList();
+
+            return finalResults;
         }
     }
 }

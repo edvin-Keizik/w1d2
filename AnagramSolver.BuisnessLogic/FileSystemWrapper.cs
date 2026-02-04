@@ -4,15 +4,12 @@ namespace AnagramSolver.BusinessLogic
 {
     public class FileSystemWrapper : IFileSystemWrapper
     {
-        public IEnumerable<string> ReadLines(string path)
+        public async IAsyncEnumerable<string> ReadLinesAsync(string path)
         {
-            using (var reader = new StreamReader(path, System.Text.Encoding.UTF8))
+            using var reader = new StreamReader(path, System.Text.Encoding.UTF8);
+            while (await reader.ReadLineAsync() is { } line)
             {
-                string? line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    yield return line;
-                }
+                yield return line;
             }
         }
     }

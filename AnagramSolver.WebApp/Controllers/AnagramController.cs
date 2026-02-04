@@ -8,17 +8,15 @@ namespace AnagramSolver.WebApp.Controllers
     {
         private readonly IWordProcessor _processor;
         private readonly AnagramSettings _settings;
-        private readonly IDictionaryLoader _loader;
 
-        public AnagramController(IWordProcessor processor, AnagramSettings settings, IDictionaryLoader loader)
+        public AnagramController(IWordProcessor processor, AnagramSettings settings)
         {
             _processor = processor;
             _settings = settings;
-            _loader = loader;
         }
 
         [HttpGet]
-        public IActionResult Index(string? InputWord)
+        public async Task<IActionResult> Index(string? InputWord, CancellationToken ct)
         {
             var model = new AnagramViewModel();
 
@@ -26,18 +24,18 @@ namespace AnagramSolver.WebApp.Controllers
             {
                 model.InputWord = InputWord;
 
-                var anagrams = _processor.GetAnagrams(InputWord, _settings.MaxAnagramsToShow, _settings.MinWordLength);
+                var anagrams =await _processor.GetAnagramsAsync(InputWord, _settings.MaxAnagramsToShow, _settings.MinWordLength, ct);
                 model.Result = anagrams.Select(a => a.Word).ToList();
             }
             return View(model);
         }
 
         [HttpPost]
-        public IActionResult Index(AnagramViewModel model)
+        public async Task<IActionResult> Index(AnagramViewModel model, CancellationToken ct)
         {
             if (model.InputWord != null && model.InputWord.Length >= _settings.MinWordLength)
             {
-                var anagrams = _processor.GetAnagrams(model.InputWord, _settings.MaxAnagramsToShow, _settings.MinWordLength);
+                var anagrams = await _processor.GetAnagramsAsync(model.InputWord, _settings.MaxAnagramsToShow, _settings.MinWordLength, ct);
                 model.Result = anagrams.Select(a => a.Word).ToList();
             }
             return View(model);
@@ -67,13 +65,13 @@ namespace AnagramSolver.WebApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddWord(AnagramViewModel model)
+        public async Task<IActionResult> AddWord(AnagramViewModel model)
         {
             if (string.IsNullOrWhiteSpace(model.InputWord)) return View(model);
 
             if (_processor.AddWord(model.InputWord))
             {
-                System.IO.File.AppendAllLines(_settings.FilePath, new[] { model.InputWord });
+                await System.IO.File.AppendAllLinesAsync(_settings.FilePath, new[] { model.InputWord });
                 TempData["SuccessMessage"] = $"Zodis '{model.InputWord}' sekmingai pridetas!";
                 return RedirectToAction("Dictionary");
             }
