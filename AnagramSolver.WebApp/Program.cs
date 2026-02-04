@@ -22,7 +22,7 @@ using (var scope = app.Services.CreateScope())
     var processor = scope.ServiceProvider.GetRequiredService<IWordProcessor>();
     var loader = scope.ServiceProvider.GetRequiredService<IDictionaryLoader>();
 
-    loader.LoadWords(anagramSettings.FilePath, processor);
+    await loader.LoadWordsAsync(anagramSettings.FilePath, processor);
 }
 
 
