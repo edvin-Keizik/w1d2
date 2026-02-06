@@ -9,7 +9,7 @@ namespace AnagramSolver.BusinessLogic.Tests
     public class WordProcessorTest
     {
         [Fact]
-        public void AddWord_WhenSignatureIsNew_AddsWordToDictionary()
+        public async Task AddWord_WhenSignatureIsNew_AddsWordToDictionary()
         {
             // Arrange
             var mockEngine = new Mock<IAnagramSearchEngine>();
@@ -21,7 +21,7 @@ namespace AnagramSolver.BusinessLogic.Tests
             processor.AddWord(testWord);
 
             // Assert
-            processor.GetAnagrams(testWord, 1, 3);
+            await processor.GetAnagramsAsync(testWord, 1, 3, CancellationToken.None);
 
             mockEngine.Verify(e => e.FindAllCombinations(
                 It.IsAny<string>(),
@@ -36,7 +36,7 @@ namespace AnagramSolver.BusinessLogic.Tests
         }
 
         [Fact]
-        public void AddWord_WhenSignatureExists_AddsWordToDictionary()
+        public async Task AddWord_WhenSignatureExists_AddsWordToDictionary()
         {
             // Arrange
             var mockEngine = new Mock<IAnagramSearchEngine>();
@@ -45,12 +45,13 @@ namespace AnagramSolver.BusinessLogic.Tests
             string signature = "alsu";
             string egzistingWord = "sula";
 
+
             // Act
             processor.AddWord(egzistingWord);
             processor.AddWord(testWord);
 
             // Assert
-            processor.GetAnagrams(testWord, 1, 3);
+            await processor.GetAnagramsAsync(testWord, 1, 3, CancellationToken.None);
 
             mockEngine.Verify(e => e.FindAllCombinations(
                 It.IsAny<string>(),
@@ -68,7 +69,7 @@ namespace AnagramSolver.BusinessLogic.Tests
             ), Times.Once);
         }
         [Fact]
-        public void AddWord_WhenWordExist_SkipWord()
+        public async Task AddWord_WhenWordExist_SkipWord()
         {
             // Arrange
             var mockEngine = new Mock<IAnagramSearchEngine>();
@@ -82,7 +83,7 @@ namespace AnagramSolver.BusinessLogic.Tests
             processor.AddWord(testWord);
 
             // Assert
-            processor.GetAnagrams(testWord, 1, 3);
+            await processor.GetAnagramsAsync(testWord, 1, 3, CancellationToken.None);
 
             mockEngine.Verify(e => e.FindAllCombinations(
                 It.IsAny<string>(),
@@ -100,14 +101,14 @@ namespace AnagramSolver.BusinessLogic.Tests
         }
 
         [Fact]
-        public void GetSignature_CheckIfReturnSorrtedLetters()
+        public async Task GetSignature_CheckIfReturnSorrtedLetters()
         {
             // Arrange
             var mockEngine = new Mock<IAnagramSearchEngine>();
             var processor = new WordProcessor(mockEngine.Object);
 
             // Act
-            processor.GetAnagrams("alus", 1, 3);
+            await processor.GetAnagramsAsync("alus", 1, 3, CancellationToken.None);
 
             // Assert
             mockEngine.Verify(e => e.FindAllCombinations(
@@ -122,7 +123,7 @@ namespace AnagramSolver.BusinessLogic.Tests
         }
 
         [Fact]
-        public void GetCandidatesKey_CheckIfReturnRightValue()
+        public async Task GetCandidatesKey_CheckIfReturnRightValue()
         {
             // Arrange
             var mockEngine = new Mock<IAnagramSearchEngine>();
@@ -133,7 +134,7 @@ namespace AnagramSolver.BusinessLogic.Tests
             processor.AddWord("sula");
 
             // Act
-            processor.GetAnagrams("alus", 1, 3);
+            await processor.GetAnagramsAsync("alus", 1, 3, CancellationToken.None);
 
             // Assert
             mockEngine.Verify(e => e.FindAllCombinations(
@@ -148,7 +149,7 @@ namespace AnagramSolver.BusinessLogic.Tests
         }
 
         [Fact]
-        public void GetCandidatesKey_WhenWordInDictionaryIsLongerThanInput_ShouldNotBeAddedToCandidates()
+        public async Task GetCandidatesKey_WhenWordInDictionaryIsLongerThanInput_ShouldNotBeAddedToCandidates()
         {
             // Arrange
             var mockEngine = new Mock<IAnagramSearchEngine>();
@@ -159,7 +160,7 @@ namespace AnagramSolver.BusinessLogic.Tests
             processor.AddWord("alphabet");
 
             // Act
-            processor.GetAnagrams("alus", 1, 3);
+            await processor.GetAnagramsAsync("alus", 1, 3, CancellationToken.None);
 
             // Assert
             mockEngine.Verify(e => e.FindAllCombinations(
@@ -174,7 +175,7 @@ namespace AnagramSolver.BusinessLogic.Tests
         }
 
         [Fact]
-        public void GetAnagram_WhenNoAnagramPassed_ReturnEmptyList()
+        public async Task GetAnagram_WhenNoAnagramPassed_ReturnEmptyList()
         {
             // Arrange
             var mockEngine = new Mock<IAnagramSearchEngine>();
@@ -183,14 +184,14 @@ namespace AnagramSolver.BusinessLogic.Tests
             processor.AddWord("labas");
 
             // Act
-            List<Anagram> result = processor.GetAnagrams("alus", 1, 3);
+            IEnumerable<Anagram> result = await processor.GetAnagramsAsync("alus", 1, 3, CancellationToken.None);
 
             // Assert
             Assert.Empty(result);
         }
 
         [Fact]
-        public void GetAnagram_WhenAnagramGetOneWord_ReturnResult()
+        public async Task GetAnagram_WhenAnagramGetOneWord_ReturnResult()
         {
             // Arrange
             var mockEngine = new Mock<IAnagramSearchEngine>();
@@ -219,15 +220,16 @@ namespace AnagramSolver.BusinessLogic.Tests
             var processor = new WordProcessor(mockEngine.Object);
 
             // Act
-            var result = processor.GetAnagrams("alus", 1, 3);
+            var result = await processor.GetAnagramsAsync("alus", 1, 3, CancellationToken.None);
 
             // Assert
             Assert.Single(result);
-            Assert.Contains("sula", result[0].Word);
+            var listResult = result.ToList();
+            Assert.Contains("sula", listResult[0].Word);
         }
 
         [Fact]
-        public void GetAnagram_WhenAnagramGetTwoWords_ReturnResult()
+        public async Task GetAnagram_WhenAnagramGetTwoWords_ReturnResult()
         {
             // Arrange
             var mockEngine = new Mock<IAnagramSearchEngine>();
@@ -250,21 +252,25 @@ namespace AnagramSolver.BusinessLogic.Tests
                 IEnumerable<string>>(
                 (bank, count, path, cand, group, allResults, orig) =>
                 {
+                    if(count == 2)
+                    {
                     allResults.Add(new List<string> { "sula", "balas" });
+                    }
                 });
 
             var processor = new WordProcessor(mockEngine.Object);
 
             // Act
-            var result = processor.GetAnagrams("alus labas", 2, 3);
+            var result = await processor.GetAnagramsAsync("alus labas", 2, 3, CancellationToken.None);
 
             // Assert
             Assert.Single(result);
-            Assert.Contains("sula balas", result[0].Word);
+            var listResult = result.ToList();
+            Assert.Contains("sula balas", listResult[0].Word);
         }
 
         [Fact]
-        public void GetAnagrams_WhenWordIsTooShort_ShouldBeFilteredOut()
+        public async Task GetAnagrams_WhenWordIsTooShort_ShouldBeFilteredOut()
         {
             // Arrange
             var mockEngine = new Mock<IAnagramSearchEngine>();
@@ -293,7 +299,7 @@ namespace AnagramSolver.BusinessLogic.Tests
             var processor = new WordProcessor(mockEngine.Object);
 
             // Act
-            var result = processor.GetAnagrams("us", 1, 3);
+            var result = await processor.GetAnagramsAsync("us", 1, 3, CancellationToken.None);
 
             // Assert
             Assert.Empty(result);
@@ -301,7 +307,7 @@ namespace AnagramSolver.BusinessLogic.Tests
         }
 
         [Fact]
-        public void GetAnagrams_WhenWordIsLongEnough_ShouldBeKept()
+        public async Task GetAnagrams_WhenWordIsLongEnough_ShouldBeKept()
         {
             // Arrange
             var mockEngine = new Mock<IAnagramSearchEngine>();
@@ -330,12 +336,28 @@ namespace AnagramSolver.BusinessLogic.Tests
             var processor = new WordProcessor(mockEngine.Object);
 
             // Act
-            var result = processor.GetAnagrams("balas", 1, 3);
+            var result = await processor.GetAnagramsAsync("balas", 1, 3, CancellationToken.None);
 
             // Assert
             Assert.Single(result);
-            Assert.Contains("labas", result[0].Word);
+            var listResult = result.ToList();
+            Assert.Contains("labas", listResult[0].Word);
 
+        }
+
+        [Fact]
+        public async Task GetAnagramsAsync_WhenTokenIsCancelled_ThrowsOperationCanceledException()
+        {
+            // Arrange
+            var mockEngine = new Mock<IAnagramSearchEngine>();
+            var processor = new WordProcessor(mockEngine.Object);
+
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(() =>
+                processor.GetAnagramsAsync("alus", 1, 3, cts.Token));
         }
     }
 }

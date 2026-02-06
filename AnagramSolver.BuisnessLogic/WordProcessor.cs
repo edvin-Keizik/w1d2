@@ -40,6 +40,15 @@ namespace AnagramSolver.BusinessLogic
             return words; 
         }
 
+        public void LoadDictionary(List<string> dictionary)
+        {
+            _wordGroups.Clear();
+            foreach(string word in dictionary)
+            {
+                AddWord(word);
+            }
+        }
+
         private string GetSignature(string word)
         {
             char[] wordArray = word.ToCharArray();
