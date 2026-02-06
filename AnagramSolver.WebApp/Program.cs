@@ -8,6 +8,10 @@ var anagramSettings = builder.Configuration.GetSection("AnagramSettings").Get<An
                ?? throw new Exception("AnagramSettings missing from appsettings.json");
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton(anagramSettings);
 builder.Services.AddSingleton<IAnagramSearchEngine, AnagramSearchEngine>();
@@ -25,6 +29,11 @@ using (var scope = app.Services.CreateScope())
     await loader.LoadWordsAsync(anagramSettings.FilePath, processor);
 }
 
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Anagram API V1");
+});
 
 if (!app.Environment.IsDevelopment())
 {

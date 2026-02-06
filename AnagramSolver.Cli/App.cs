@@ -1,41 +1,30 @@
 ﻿using AnagramSolver.BusinessLogic;
 using AnagramSolver.Contracts;
+using System.Net.Http.Json;
 
 namespace AnagramSolver.Cli
 {
     public class App
     {
-        private readonly string _filePath;
-        private readonly IWordProcessor _processor;
-        private readonly IDictionaryLoader _loader;
-        private readonly AnagramSettings _settings;
         private readonly IUserInputOutput _ui;
+        private readonly AnagramSettings _settings;
 
-
-        public App(string filePath,
-            AnagramSettings settings,
-            IWordProcessor processor,
-            IDictionaryLoader loader,
-            IUserInputOutput ui)
+        public App(AnagramSettings settings, IUserInputOutput ui)
         {
-            _filePath = filePath;
             _settings = settings;
-            _processor = processor;
-            _loader = loader;
             _ui = ui;
         }
 
         public async Task Run(CancellationToken ct)
         {
-            _ui.WriteLine("Atsisiunciamas zodynas");
-            await _loader.LoadWordsAsync(_filePath, _processor);
-            _ui.WriteLine("Zodynas atsiustas. Ivesti 0 kad baigti.");
+            _ui.WriteLine("Prisijungta prie API. Ivesti 0 kad baigti.");
+
+            using var client = new HttpClient();
 
             while (true)
             {
                 string input = "";
                 bool lengthCheck = false;
-                int anagramCount = 0;
 
                 while (!lengthCheck)
                 {
@@ -51,22 +40,30 @@ namespace AnagramSolver.Cli
                     {
                         _ui.WriteLine($"Klaida: Zodis per trumpas!");
                     }
-                }           
+                }
 
-                IEnumerable<Anagram> anagrams = await _processor
-                    .GetAnagramsAsync(input, _settings.MaxAnagramsToShow, _settings.MinWordLength, ct);
-                if (anagrams.Any())
+                try
                 {
-                    _ui.WriteLine($"Zodzio {input} anagramos: ");
-                    foreach (var anagram in anagrams)
+                    string url = $"http://localhost:8080/api/anagrams/{input}";
+
+                    var anagrams = await client.GetFromJsonAsync<List<string>>(url, ct);
+
+                    if (anagrams != null && anagrams.Any())
                     {
-                            _ui.WriteLine(anagram.Word);
-                            anagramCount++;
+                        _ui.WriteLine($"Zodzio {input} anagramos: ");
+                        foreach (var word in anagrams)
+                        {
+                            _ui.WriteLine(word);
+                        }
+                    }
+                    else
+                    {
+                        _ui.WriteLine($"Anagramu zodziui {input} nera.");
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    _ui.WriteLine($"Anagramu zodziui {input} nera.");
+                    _ui.WriteLine($"Klaida: Nepavyko pasiekti API ({ex.Message})");
                 }
             }
         }
