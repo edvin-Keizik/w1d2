@@ -2,102 +2,84 @@
 using Xunit;
 using AnagramSolver.Contracts;
 using AnagramSolver.Cli;
-
+using Moq.Protected;
+using System.Net;
+using System.Text.Json;
 
 namespace AnagramSolver.Cli.Tests
 {
     public class AppTest
     {
+        private readonly Mock<IUserInputOutput> _mockUI;
+        private readonly AnagramSettings _settings;
+
+        public AppTest()
+        {
+            _mockUI = new Mock<IUserInputOutput>();
+            _settings = new AnagramSettings { MinWordLength = 3, MaxAnagramsToShow = 1 };
+        }
+
+        private HttpClient CreateMockHttpClient(HttpResponseMessage response)
+        {
+            var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            handlerMock
+               .Protected()
+               .Setup<Task<HttpResponseMessage>>(
+                  "SendAsync",
+                  ItExpr.IsAny<HttpRequestMessage>(),
+                  ItExpr.IsAny<CancellationToken>()
+               )
+               .ReturnsAsync(response)
+               .Verifiable();
+
+            return new HttpClient(handlerMock.Object);
+        }
+
         [Fact]
-        public async Task App_Run_FullFlow_DisplaysAnagramsAndExits()
+        public async Task App_Run_WhenApiReturnsAnagrams_DisplaysThem()
         {
             // Arrange
             var mockUI = new Mock<IUserInputOutput>();
-            var mockProcessor = new Mock<IWordProcessor>();
-            var mockLoader = new Mock<IDictionaryLoader>();
-            var settings = new AnagramSettings { MinWordLength = 3, MaxAnagramsToShow = 1 };
+            mockUI.SetupSequence(u => u.ReadLine()).Returns("alus").Returns("0");
 
-            mockUI.SetupSequence(u => u.ReadLine())
-                .Returns("alus")
-                .Returns("0");
+            var handlerMock = new Mock<HttpMessageHandler>();
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("[\"sula\", \"alus\"]")
+            };
 
-            var expectedAnagrams = new List<Anagram> { new Anagram { Word = "alsu" } };
+            handlerMock.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(response);
 
-            var cts = new CancellationTokenSource();
-            cts.Cancel();
-
-            mockProcessor.Setup(p => p.GetAnagramsAsync("alus", 1, 3, cts.Token))
-                         .ReturnsAsync(expectedAnagrams);
-
-            var app = new App("fakePath.txt", settings, mockProcessor.Object, mockLoader.Object, mockUI.Object);
+            var fakeClient = new HttpClient(handlerMock.Object) { BaseAddress = new Uri("http://fake.com/") };
+            var app = new App(new AnagramSettings { MinWordLength = 3 }, mockUI.Object, fakeClient);
 
             // Act
-            await app.Run(cts.Token);
+            await app.Run(CancellationToken.None);
 
             // Assert
-            mockUI.Verify(u => u.WriteLine("Atsisiunciamas zodynas"), Times.Once);
-
-            mockLoader.Verify(l => l.LoadWordsAsync("fakePath.txt", mockProcessor.Object), Times.Once);
-
-            mockUI.Verify(u => u.WriteLine("alsu"), Times.Once);
+            mockUI.Verify(u => u.WriteLine(It.Is<string>(s => s.Contains("sula"))), Times.Once);
         }
 
         [Fact]
         public async Task App_Run_WhenWordTooShort_ShowsErrorMessage()
         {
             // Arrange
-            var mockUI = new Mock<IUserInputOutput>();
-            var mockProcessor = new Mock<IWordProcessor>();
-            var mockLoader = new Mock<IDictionaryLoader>();
-            var settings = new AnagramSettings { MinWordLength = 3 };
-
-            mockUI.SetupSequence(u => u.ReadLine())
+            _mockUI.SetupSequence(u => u.ReadLine())
                   .Returns("a")
                   .Returns("0");
 
-            var app = new App("path.txt", settings, mockProcessor.Object, mockLoader.Object, mockUI.Object);
+            var handlerMock = new Mock<HttpMessageHandler>();
+            var fakeClient = new HttpClient(handlerMock.Object) { BaseAddress = new Uri("http://fake.com/") };
 
-            var cts = new CancellationTokenSource();
-            cts.Cancel();
-
-            // Act
-            await app.Run(cts.Token);
-
-            // Assert
-            mockUI.Verify(u => u.WriteLine(It.Is<string>(s => s.Contains("per trumpas"))), Times.Once);
-
-            mockProcessor.Verify(p => p.GetAnagramsAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), cts.Token), Times.Never);
-        }
-
-        [Fact]
-        public async Task App_Run_WhenNoAnagramsFound_DisplaysMissingMessage()
-        {
-            // Arrange
-            var mockUI = new Mock<IUserInputOutput>();
-            var mockProcessor = new Mock<IWordProcessor>();
-            var mockLoader = new Mock<IDictionaryLoader>();
-
-            var cts = new CancellationTokenSource();
-            cts.Cancel();
-
-            mockUI.SetupSequence(u => u.ReadLine()).Returns("ąžuolas").Returns("0");
-
-            mockProcessor.Setup(p => p.GetAnagramsAsync("ąžuolas", It.IsAny<int>(), It.IsAny<int>(), cts.Token))
-                         .ReturnsAsync(new List<Anagram>());
-
-            var app = new App(
-                "path.txt",
-                new AnagramSettings { MinWordLength = 3 },
-                mockProcessor.Object,
-                mockLoader.Object,
-                mockUI.Object
-            );
+            var app = new App(_settings, _mockUI.Object, fakeClient);
 
             // Act
-            await app.Run(cts.Token);
+            await app.Run(CancellationToken.None);
 
             // Assert
-            mockUI.Verify(u => u.WriteLine(It.Is<string>(s => s.Contains("nera"))), Times.Once);
+            _mockUI.Verify(u => u.WriteLine(It.Is<string>(s => s.Contains("per trumpas"))), Times.Once);
         }
     }
 }

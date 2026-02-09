@@ -1,5 +1,6 @@
 using AnagramSolver.BusinessLogic;
 using AnagramSolver.Contracts;
+using AnagramSolver.WebApp.GraphQL;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,15 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddGraphQLServer().AddQueryType<Query>();
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+});
 
 builder.Services.AddSingleton(anagramSettings);
 builder.Services.AddSingleton<IAnagramSearchEngine, AnagramSearchEngine>();
@@ -35,6 +45,8 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Anagram API V1");
 });
 
+app.MapGraphQL();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -45,6 +57,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
+
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",

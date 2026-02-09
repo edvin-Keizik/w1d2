@@ -46,6 +46,14 @@ namespace AnagramSolver.WebApp.Api
             var success = await _loader.DeleteWordAsync(_path, id, _processor);
             return success ? NoContent() : NotFound();
         }
+
+        [HttpGet("Download")]
+        public IActionResult DownloadDictionary()
+        {
+            var stream = new FileStream(_path, FileMode.Open, FileAccess.Read);
+
+            return File(stream, "text/plain", "zodynas.txt");
+        }
     }
 
 }

@@ -4,7 +4,26 @@
 @{
     ViewData["Title"] = "Anagram Solver";
 }
-
+@if (ViewBag.LastSearch != null)
+{
+    <div class="alert alert-info">
+        Paskutinį kartą ieškojote: <strong>@ViewBag.LastSearch</strong>
+    </div>
+}
+<h5>Search History (This Session)</h5>
+@if (ViewBag.History != null)
+{
+    <ul>
+        @foreach (var item in (List<SearchHistoryItem>)ViewBag.History)
+        {
+            <li>@item.Word <small>(@item.SearchedAt.ToShortTimeString())</small></li>
+        }
+    </ul>
+}
+else
+{
+    <p>No history yet.</p>
+}
 <div class="text-center">
     <h1 class="display-4">Anagram Solver</h1>
     <p>Iveskite zodi, kad rasti jo anagramas.</p>
