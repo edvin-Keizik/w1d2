@@ -17,9 +17,11 @@ namespace AnagramSolver.Cli
             string jsonString = File.ReadAllText("appsettings.json");
             AnagramSettings settings = JsonSerializer.Deserialize<AnagramSettings>(jsonString)!;
 
+            var httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:8080/") };
+
             IUserInputOutput ui = new ConsoleUI();
 
-            App myApp = new App(settings, ui);
+            App myApp = new App(settings, ui, httpClient);
             await myApp.Run(ct);
         }
     }
