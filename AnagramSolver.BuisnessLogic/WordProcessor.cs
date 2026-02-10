@@ -6,6 +6,7 @@ namespace AnagramSolver.BusinessLogic
     {
         private readonly Dictionary<string, List<string>> _wordGroups = new();
         private readonly IAnagramSearchEngine _searchEngine;
+        private readonly MemoryCache<IEnumerable<Anagram>> _cache = new();
 
         public WordProcessor(IAnagramSearchEngine searchEngine)
         {
@@ -74,6 +75,11 @@ namespace AnagramSolver.BusinessLogic
         {
             ct.ThrowIfCancellationRequested();
 
+            if(_cache.TryGetCache(input, out var cachedAnagrams))
+            {
+                return cachedAnagrams;
+            }
+
             string letterBank = GetSignature(input.Replace(" ", "").ToLower());
             var originalWords = input.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
@@ -103,6 +109,8 @@ namespace AnagramSolver.BusinessLogic
                 .Where(combination => combination.All(word => word.Length >= minWordLength))
                 .Select(combination => new Anagram { Word = string.Join(" ", combination) })
                 .ToList();
+
+            _cache.AddCache(input, finalResults);
 
             return finalResults;
         }
