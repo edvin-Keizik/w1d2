@@ -52,7 +52,7 @@ namespace AnagramSolver.BusinessLogic
             {
                 if(remainingLetters.Length == 0)
                 {
-                    allResults.Add(new List<string>(currentPath));
+                    allResults.Add(currentPath.ToList());
                 }
                 return;
             }

@@ -33,7 +33,7 @@ namespace AnagramSolver.WebApp.Controllers
 
                 model.InputWord = InputWord;
 
-                var anagrams = await _processor.GetAnagramsAsync(InputWord, _settings.MaxAnagramsToShow, _settings.MinWordLength, ct);
+                var anagrams = await _processor.GetAnagramsAsync(InputWord, _settings.MaxAnagramsToShow, w => w.Length > 3, ct);
                 model.Result = anagrams.Select(a => a.Word).ToList();
             }
             LoadHistoryToViewBag();
@@ -59,7 +59,7 @@ namespace AnagramSolver.WebApp.Controllers
 
                 ViewBag.LastSearch = model.InputWord;
 
-                var anagrams = await _processor.GetAnagramsAsync(model.InputWord, _settings.MaxAnagramsToShow, _settings.MinWordLength, ct);
+                var anagrams = await _processor.GetAnagramsAsync(model.InputWord, _settings.MaxAnagramsToShow, w => w.StartsWith("a"), ct);
                 model.Result = anagrams.Select(a => a.Word).ToList();
             }
             
