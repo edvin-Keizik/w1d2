@@ -71,7 +71,11 @@ namespace AnagramSolver.BusinessLogic
         }
 
 
-        public async Task<IEnumerable<Anagram>> GetAnagramsAsync(string input, int maxAnagramsToShow, int minWordLength, CancellationToken ct = default)
+        public async Task<IEnumerable<Anagram>> GetAnagramsAsync(
+            string input,
+            int maxAnagramsToShow,
+            Func<string, bool> filter,
+            CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -106,9 +110,11 @@ namespace AnagramSolver.BusinessLogic
 
             var finalResults = allTaskResults
                 .SelectMany(list => list)
-                .Where(combination => combination.All(word => word.Length >= minWordLength))
+                .Select(combination =>  string.Join(" ", combination))
+                .Where(filter)
                 .Select(combination => new Anagram { Word = string.Join(" ", combination) })
                 .ToList();
+
 
             _cache.AddCache(input, finalResults);
 
