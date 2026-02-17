@@ -1,4 +1,6 @@
 using AnagramSolver.BusinessLogic;
+using AnagramSolver.BusinessLogic.ChainOfResponsibility;
+using AnagramSolver.BusinessLogic.ChainOfResponsibility.Steps;
 using AnagramSolver.Contracts;
 using AnagramSolver.WebApp.GraphQL;
 
@@ -25,9 +27,33 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddSingleton(anagramSettings);
 builder.Services.AddSingleton<IAnagramSearchEngine, AnagramSearchEngine>();
-builder.Services.AddSingleton<IWordProcessor, WordProcessor>();
 builder.Services.AddSingleton<IFileSystemWrapper, FileSystemWrapper>();
 builder.Services.AddSingleton<IDictionaryLoader, DictionaryLoader>();
+
+builder.Services.AddSingleton<WordLengthStep>();
+builder.Services.AddSingleton<AllowedCharactersStep>();
+
+builder.Services.AddSingleton<FilterPipeline>(sp =>
+{
+    var pipeline = new FilterPipeline();
+
+    pipeline.AddStep(sp.GetRequiredService<WordLengthStep>());
+    pipeline.AddStep(sp.GetRequiredService<AllowedCharactersStep>());
+
+    return pipeline;
+});
+
+builder.Services.AddSingleton<WordProcessor>();
+builder.Services.AddSingleton<IWordProcessor>(sp => sp.GetRequiredService<WordProcessor>());
+
+builder.Services.AddSingleton<IGetAnagrams>(sp =>
+{
+    var coreSearch = sp.GetRequiredService<WordProcessor>();
+    var timingDecorator = new AnagramSearchTimingDecorator(coreSearch);
+    var loggingDecorator = new AnagramSearchLogDecorator(timingDecorator);
+
+    return loggingDecorator;
+});
 
 var app = builder.Build();
 

@@ -14,15 +14,16 @@ namespace AnagramSolver.WebApp.Tests
         {
             // Arrange
             var mockProcessor = new Mock<IWordProcessor>();
+            var mockAnagrams = new Mock<IGetAnagrams>();
             var mockSettings = new AnagramSettings { MaxAnagramsToShow = 2, MinWordLength = 2};
 
             var cts = new CancellationTokenSource();
             cts.Cancel();
 
-            mockProcessor.Setup(word => word.GetAnagramsAsync("alus", It.IsAny<int>(), It.IsAny<int>(), cts.Token))
+            mockAnagrams.Setup(word => word.GetAnagramsAsync("alus", It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<string, bool>>(), cts.Token))
                 .ReturnsAsync(new List<Anagram> { new Anagram { Word = "sula" } });
 
-            var controller = new AnagramController(mockProcessor.Object, mockSettings);
+            var controller = new AnagramController(mockProcessor.Object, mockSettings, mockAnagrams.Object);
 
             // Act
             var result = await controller.Index("alus", cts.Token) as ViewResult;
@@ -38,15 +39,16 @@ namespace AnagramSolver.WebApp.Tests
         {
             // Arrange
             var mockProcessor = new Mock<IWordProcessor>();
+            var mockAnagrams = new Mock<IGetAnagrams>();
             var mockSettings = new AnagramSettings { MaxAnagramsToShow = 2, MinWordLength = 2 };
 
             var cts = new CancellationTokenSource();
             cts.Cancel();
 
-            mockProcessor.Setup(word => word.GetAnagramsAsync("man", It.IsAny<int>(), It.IsAny<int>(), cts.Token))
+            mockAnagrams.Setup(word => word.GetAnagramsAsync("man", It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Func<string, bool>>(), cts.Token))
                 .ReturnsAsync(new List<Anagram>());
 
-            var controller = new AnagramController(mockProcessor.Object, mockSettings);
+            var controller = new AnagramController(mockProcessor.Object, mockSettings, mockAnagrams.Object);
 
             // Act
             var result = await controller.Index("man", cts.Token) as ViewResult;
@@ -64,8 +66,9 @@ namespace AnagramSolver.WebApp.Tests
         {
             // Arrange
             var mockProcessor = new Mock<IWordProcessor>();
+            var mockAnagrams = new Mock<IGetAnagrams>();
             var mockSettings = new AnagramSettings { MaxAnagramsToShow = 2, MinWordLength = 2 };
-            var controller = new AnagramController(mockProcessor.Object, mockSettings);
+            var controller = new AnagramController(mockProcessor.Object, mockSettings, mockAnagrams.Object);
 
             var cts = new CancellationTokenSource();
             cts.Cancel();
@@ -77,10 +80,11 @@ namespace AnagramSolver.WebApp.Tests
             // Assert
             Assert.NotNull(model);
 
-            mockProcessor.Verify(word => word.GetAnagramsAsync(
+            mockAnagrams.Verify(word => word.GetAnagramsAsync(
                 It.IsAny<string>(),
                 It.IsAny<int>(),
                 It.IsAny<int>(),
+                It.IsAny<Func<string, bool>>(),
                 cts.Token),
                 Times.Never);
         }

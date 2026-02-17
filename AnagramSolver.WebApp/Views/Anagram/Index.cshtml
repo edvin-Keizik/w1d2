@@ -44,7 +44,12 @@ else
         {
             <div class="mt-4">
                 <h3>Rastos anagramos:</h3>
-                <div id= "anagram-container"></div>
+                <ul class="list-group">
+                    @foreach (var item in Model.Result)
+                    {
+                        <li class="list-group-item">@item</li>
+                    }
+                </ul>
             </div>
         }
         else if (!string.IsNullOrEmpty(Model.InputWord))
@@ -55,45 +60,3 @@ else
         }
     </div>
 </div>
-
-
-<script>
-    const word = "@Model.InputWord";
-    if(word){
-        const key = `anagram_${word}`;
-        const cached = localStorage.getItem(key);
-
-        if (cached) {
-            console.log("Found in LocalStorage!");
-            displayResults(JSON.parse(cached));
-        } else {
-            console.log("Not in LocalStorage, fetching...");
-            fetch(`/api/anagrams/${word}`)
-                .then(r => r.json())
-                .then(data => {
-                    localStorage.setItem(key, JSON.stringify(data));
-                    displayResults(data);
-                });
-        }
-    }
-
-        function displayResults(data) {
-        const container = document.getElementById("anagram-container");
-        container.innerHTML = "";
-
-        if (data && data.length > 0) {
-            const ul = document.createElement("ul");
-            ul.className = "list-group";
-
-            data.forEach(item => {
-                const li = document.createElement("li");
-                li.className = "list-group-item";
-                li.textContent = item;
-                ul.appendChild(li);
-            });
-            container.appendChild(ul);
-        } else {
-            container.innerHTML = "<p class='alert alert-warning'>No anagrams found.</p>";
-        }
-    }
-</script>

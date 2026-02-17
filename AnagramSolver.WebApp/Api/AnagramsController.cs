@@ -8,12 +8,12 @@ namespace AnagramSolver.WebApp.Api
     [ApiController]
     public class AnagramsController : ControllerBase
     {
-        private readonly IWordProcessor _processor;
+        private readonly IGetAnagrams _anagrams;
         private readonly AnagramSettings _settings;
 
-        public AnagramsController(IWordProcessor processor, AnagramSettings settings)
+        public AnagramsController(IGetAnagrams anagrams, AnagramSettings settings)
         {
-            _processor = processor;
+            _anagrams = anagrams;
             _settings = settings;
         }
 
@@ -22,7 +22,7 @@ namespace AnagramSolver.WebApp.Api
         {
             var watch = Stopwatch.StartNew();
 
-            var anagrams = await _processor.GetAnagramsAsync(word, _settings.MaxAnagramsToShow, w => w.Length > 3, ct);
+            var anagrams = await _anagrams.GetAnagramsAsync(word, _settings.MaxAnagramsToShow, _settings.MinWordLength, w => w.Length > 3, ct);
 
             watch.Stop();
 
