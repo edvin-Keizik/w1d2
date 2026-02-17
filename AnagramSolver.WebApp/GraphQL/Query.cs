@@ -9,9 +9,9 @@ namespace AnagramSolver.WebApp.GraphQL
         {
             _settings = settings;
         }
-        public async Task<IEnumerable<string>> GetAnagrams([Service] IWordProcessor processor, string word)
+        public async Task<IEnumerable<string>> GetAnagrams([Service] IGetAnagrams anagrams, string word)
         {
-            var result = await processor.GetAnagramsAsync(word, _settings.MaxAnagramsToShow, w => w.Length > 3);
+            var result = await anagrams.GetAnagramsAsync(word, _settings.MaxAnagramsToShow, _settings.MinWordLength, w => w.Length > 3);
             return result.Select(a => a.Word);
         }
 

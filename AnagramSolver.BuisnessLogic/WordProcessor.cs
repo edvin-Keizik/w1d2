@@ -1,16 +1,19 @@
-﻿using AnagramSolver.Contracts;
+﻿using AnagramSolver.BusinessLogic.ChainOfResponsibility;
+using AnagramSolver.Contracts;
 
 namespace AnagramSolver.BusinessLogic
 {
-    public class WordProcessor : IWordProcessor
+    public class WordProcessor : IWordProcessor, IGetAnagrams
     {
         private readonly Dictionary<string, List<string>> _wordGroups = new();
         private readonly IAnagramSearchEngine _searchEngine;
+        private readonly FilterPipeline _pipeline;
         private readonly MemoryCache<IEnumerable<Anagram>> _cache = new();
 
-        public WordProcessor(IAnagramSearchEngine searchEngine)
+        public WordProcessor(IAnagramSearchEngine searchEngine, FilterPipeline pipeline)
         {
             _searchEngine = searchEngine;
+            _pipeline = pipeline;
         }
         public bool AddWord(string word)
         {
@@ -51,15 +54,23 @@ namespace AnagramSolver.BusinessLogic
 
             return new string(wordArray);
         }
-        private async Task<List<string>> GetCandidatesKeysAsync(string letterBank)
+        private async Task<List<string>> GetCandidatesKeysAsync(string letterBank, int minWordLength)
         {
+            var context = new FilterContext
+            {
+                LetterBank = letterBank,
+                AllowedChars = new HashSet<char>(letterBank),
+                BankLength = letterBank.Length,
+                MinWordLength = minWordLength
+
+            };
+
             return await Task.Run(() =>
             {
                 var candidates = new List<string>();
-
                 foreach (var signature in _wordGroups.Keys)
                 {
-                    if (signature.Length > letterBank.Length) continue;
+                    if (!_pipeline.Execute(context, signature)) continue;
 
                     if (_searchEngine.CanSubstract(letterBank, signature, out _))
                     {
@@ -74,6 +85,7 @@ namespace AnagramSolver.BusinessLogic
         public async Task<IEnumerable<Anagram>> GetAnagramsAsync(
             string input,
             int maxAnagramsToShow,
+            int minWordLength,
             Func<string, bool> filter,
             CancellationToken ct = default)
         {
@@ -87,7 +99,7 @@ namespace AnagramSolver.BusinessLogic
             string letterBank = GetSignature(input.Replace(" ", "").ToLower());
             var originalWords = input.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            var candidates = await GetCandidatesKeysAsync(letterBank);
+            var candidates = await GetCandidatesKeysAsync(letterBank, minWordLength);
 
             var searchTasks = Enumerable.Range(1, maxAnagramsToShow).Select(i =>
             {
@@ -108,11 +120,16 @@ namespace AnagramSolver.BusinessLogic
 
             var allTaskResults = await Task.WhenAll(searchTasks);
 
-            var finalResults = allTaskResults
-                .SelectMany(list => list)
-                .Select(combination =>  string.Join(" ", combination))
+            var flatResults = allTaskResults.SelectMany(list => list);
+
+            var processingQuery = flatResults.Count() > 5000
+                ? flatResults.AsParallel().AsOrdered()
+                : flatResults.AsEnumerable();
+
+            var finalResults = processingQuery
+                .Select(combination => string.Join(" ", combination))
                 .Where(filter)
-                .Select(combination => new Anagram { Word = string.Join(" ", combination) })
+                .Select(str => new Anagram { Word = str })
                 .ToList();
 
 
