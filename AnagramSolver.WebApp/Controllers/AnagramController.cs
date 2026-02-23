@@ -72,11 +72,11 @@ namespace AnagramSolver.WebApp.Controllers
             return View(model);
         }
 
-        public IActionResult Dictionary(int page = 1)
+        public async Task<IActionResult> Dictionary(int page = 1)
         {
             int pageSize = 90;
 
-            var allWords = _processor.GetDictionary();
+            var allWords = await _processor.GetDictionary();
 
             var peginateWords = allWords
                 .Skip((page - 1) * pageSize)
@@ -100,9 +100,10 @@ namespace AnagramSolver.WebApp.Controllers
         {
             if (string.IsNullOrWhiteSpace(model.InputWord)) return View(model);
 
-            if (_processor.AddWord(model.InputWord))
+            bool wasAdded = await _processor.AddWordAsync(model.InputWord);
+
+            if (wasAdded)
             {
-                await System.IO.File.AppendAllLinesAsync(_settings.FilePath, new[] { model.InputWord });
                 TempData["SuccessMessage"] = $"Zodis '{model.InputWord}' sekmingai pridetas!";
                 return RedirectToAction("Dictionary");
             }

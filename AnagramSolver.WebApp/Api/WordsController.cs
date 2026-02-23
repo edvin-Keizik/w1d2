@@ -8,23 +8,24 @@ namespace AnagramSolver.WebApp.Api
     [ApiController]
     public class WordsController : ControllerBase
     {
-        private readonly IDictionaryLoader _loader;
         private readonly IWordProcessor _processor;
-        private readonly string _path = "Data/zodynas.txt";
 
-        public WordsController(IDictionaryLoader loader, IWordProcessor processor)
+        public WordsController(IWordProcessor processor)
         {
-            _loader = loader;
             _processor = processor;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll() => Ok(await _loader.GetWordsAsync(_processor));
+        public async Task<IActionResult> GetAll()
+        {
+            var words = await _processor.GetDictionary();
+            return Ok(words);
+        }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var words = _processor.GetDictionary();
+            var words = await _processor.GetDictionary();
 
             if(id < 0 || id > words.Count)
             {
@@ -36,23 +37,10 @@ namespace AnagramSolver.WebApp.Api
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] string word)
         {
-            await _loader.AddWordAsync(_path, word, _processor);
-            return Ok("Zodis pridetas");
-        }
+            if (string.IsNullOrWhiteSpace(word)) return BadRequest("Word cannot be empty.");
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var success = await _loader.DeleteWordAsync(_path, id, _processor);
-            return success ? NoContent() : NotFound();
-        }
-
-        [HttpGet("Download")]
-        public IActionResult DownloadDictionary()
-        {
-            var stream = new FileStream(_path, FileMode.Open, FileAccess.Read);
-
-            return File(stream, "text/plain", "zodynas.txt");
+            bool success = await _processor.AddWordAsync(word);
+            return success ? Ok("Zodis pridetas") : BadRequest("Zodis jau egzistuoja.");
         }
     }
 
