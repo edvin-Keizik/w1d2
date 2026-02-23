@@ -1,49 +1,60 @@
 ﻿using AnagramSolver.BusinessLogic.ChainOfResponsibility;
 using AnagramSolver.Contracts;
+using Microsoft.EntityFrameworkCore;
 
 namespace AnagramSolver.BusinessLogic
 {
     public class WordProcessor : IWordProcessor, IGetAnagrams
     {
-        private readonly Dictionary<string, List<string>> _wordGroups = new();
+        private readonly AnagramDbContext _context;
+        private readonly HashSet<string> _signatures = new();
         private readonly IAnagramSearchEngine _searchEngine;
         private readonly FilterPipeline _pipeline;
         private readonly MemoryCache<IEnumerable<Anagram>> _cache = new();
 
-        public WordProcessor(IAnagramSearchEngine searchEngine, FilterPipeline pipeline)
+        public WordProcessor(IAnagramSearchEngine searchEngine, FilterPipeline pipeline, AnagramDbContext context)
         {
             _searchEngine = searchEngine;
             _pipeline = pipeline;
+            _context = context;
+
+            _signatures = _context.WordGroupsEntity.Select(x => x.Signature).ToHashSet();
         }
-        public bool AddWord(string word)
+
+        public async Task<List<string>> GetDictionary()
         {
-            string signature = GetSignature(word.ToLower());
-            if (!_wordGroups.ContainsKey(signature))
-            {
-                _wordGroups[signature] = new List<string>();
-            }
-            if (_wordGroups[signature].Contains(word))
-            {
+            return await _context.Words.Select(w => w.Value).ToListAsync();
+        }
+
+        public async Task<bool> AddWordAsync(string word)
+        {
+            string cleanedWord = word.Trim().ToLower();
+            string signature = GetSignature(cleanedWord);
+
+            if (await _context.Words.AnyAsync(w => w.Value == cleanedWord))
                 return false;
-            }
 
-            _wordGroups[signature].Add(word);      
-            return true;
-        }
+            _context.Words.Add(new WordEntity { Value = cleanedWord });
 
-        public List<string> GetDictionary()
-        {
-            List<string> words = _wordGroups.Values.SelectMany(list => list).ToList();
-            return words; 
-        }
-
-        public void LoadDictionary(List<string> dictionary)
-        {
-            _wordGroups.Clear();
-            foreach(string word in dictionary)
+            var existingGroup = await _context.WordGroupsEntity.FindAsync(signature);
+            if (existingGroup == null)
             {
-                AddWord(word);
+                _context.WordGroupsEntity.Add(new WordGroupsEntity
+                {
+                    Signature = signature,
+                    Words = cleanedWord
+                });
             }
+            else
+            {
+                existingGroup.Words += $",{cleanedWord}";
+            }
+
+            await _context.SaveChangesAsync();
+
+            _signatures.Add(signature);
+
+            return true;
         }
 
         private string GetSignature(string word)
@@ -68,7 +79,7 @@ namespace AnagramSolver.BusinessLogic
             return await Task.Run(() =>
             {
                 var candidates = new List<string>();
-                foreach (var signature in _wordGroups.Keys)
+                foreach (var signature in _signatures)
                 {
                     if (!_pipeline.Execute(context, signature)) continue;
 
@@ -101,6 +112,10 @@ namespace AnagramSolver.BusinessLogic
 
             var candidates = await GetCandidatesKeysAsync(letterBank, minWordLength);
 
+            var wordMap = await _context.WordGroupsEntity
+                .Where(x => candidates.Contains(x.Signature))
+                .ToDictionaryAsync(x => x.Signature, x => x.Words.Split(',').ToList(), ct);
+
             var searchTasks = Enumerable.Range(1, maxAnagramsToShow).Select(i =>
             {
                 return Task.Run(() =>
@@ -111,7 +126,7 @@ namespace AnagramSolver.BusinessLogic
                         i,
                         new List<string>(),
                         candidates,
-                        _wordGroups,
+                        wordMap,
                         resultsForThisCount,
                         originalWords);
                     return resultsForThisCount;
@@ -134,7 +149,6 @@ namespace AnagramSolver.BusinessLogic
 
 
             _cache.AddCache(input, finalResults);
-
             return finalResults;
         }
     }

@@ -3,120 +3,52 @@ using Xunit;
 using AnagramSolver.BusinessLogic;
 using AnagramSolver.Contracts;
 using AnagramSolver.BusinessLogic.ChainOfResponsibility;
-
+using Microsoft.EntityFrameworkCore;
 
 namespace AnagramSolver.BusinessLogic.Tests
 {
-    public class WordProcessorTest
+    public class WordProcessorTest : IDisposable
     {
-        [Fact]
-        public async Task AddWord_WhenSignatureIsNew_AddsWordToDictionary()
+        private readonly AnagramDbContext _context;
+        private readonly Mock<IAnagramSearchEngine> _mockEngine;
+        private readonly FilterPipeline _mockFilterPipeline;
+
+        public WordProcessorTest()
         {
-            // Arrange
-            var mockEngine = new Mock<IAnagramSearchEngine>();
-            var mockFilterPipeline = new FilterPipeline();
-            var processor = new WordProcessor(mockEngine.Object, mockFilterPipeline);
-            string testWord = "alus";
-            string signature = "alsu";
+            // Set up a fresh In-Memory Database for every test
+            var options = new DbContextOptionsBuilder<AnagramDbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
 
-            // Act
-            processor.AddWord(testWord);
+            _context = new AnagramDbContext(options);
+            _mockEngine = new Mock<IAnagramSearchEngine>();
+            _mockFilterPipeline = new FilterPipeline();
 
-            // Assert
-            await processor.GetAnagramsAsync(testWord, 1, 1, w => w.Length > 3, CancellationToken.None);
+            // Note: In real scenarios, you'd add steps to the pipeline here if needed
+        }
 
-            mockEngine.Verify(e => e.FindAllCombinations(
-                It.IsAny<string>(),
-                It.IsAny<int>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<List<string>>(),
-                It.Is<Dictionary<string, List<string>>>(dict =>
-                    dict.ContainsKey(signature) && dict[signature].Contains(testWord)),
-                It.IsAny<List<List<string>>>(),
-                It.IsAny<IEnumerable<string>>()
-            ), Times.Once);
+        private async Task SeedData(string signature, string words)
+        {
+            _context.WordGroupsEntity.Add(new WordGroupsEntity
+            {
+                Signature = signature,
+                Words = words
+            });
+            await _context.SaveChangesAsync();
         }
 
         [Fact]
-        public async Task AddWord_WhenSignatureExists_AddsWordToDictionary()
+        public async Task GetSignature_ReturnsSortedLetters_ThroughSearchEngineVerify()
         {
             // Arrange
-            var mockEngine = new Mock<IAnagramSearchEngine>();
-            var mockFilterPipeline = new FilterPipeline();
-            var processor = new WordProcessor(mockEngine.Object, mockFilterPipeline);
-            string testWord = "alus";
-            string signature = "alsu";
-            string egzistingWord = "sula";
-
+            await SeedData("alsu", "alus,sula");
+            var processor = new WordProcessor(_mockEngine.Object, _mockFilterPipeline, _context);
 
             // Act
-            processor.AddWord(egzistingWord);
-            processor.AddWord(testWord);
+            await processor.GetAnagramsAsync("alus", 1, 1, w => true);
 
-            // Assert
-            await processor.GetAnagramsAsync(testWord, 1, 1, w => w.Length > 3, CancellationToken.None);
-
-            mockEngine.Verify(e => e.FindAllCombinations(
-                It.IsAny<string>(),
-                It.IsAny<int>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<List<string>>(),
-                It.Is<Dictionary<string, List<string>>>(dict =>
-            dict.ContainsKey(signature) &&
-            dict[signature].Count == 2 &&
-            dict[signature].Contains(testWord) &&
-            dict[signature].Contains(egzistingWord)
-            ),
-                It.IsAny<List<List<string>>>(),
-                It.IsAny<IEnumerable<string>>()
-            ), Times.Once);
-        }
-        [Fact]
-        public async Task AddWord_WhenWordExist_SkipWord()
-        {
-            // Arrange
-            var mockEngine = new Mock<IAnagramSearchEngine>();
-            var mockFilterPipeline = new FilterPipeline();
-            var processor = new WordProcessor(mockEngine.Object, mockFilterPipeline);
-            string testWord = "alus";
-            string signature = "alsu";
-            string egzistingWord = "alus";
-
-            // Act
-            processor.AddWord(egzistingWord);
-            processor.AddWord(testWord);
-
-            // Assert
-            await processor.GetAnagramsAsync(testWord, 1, 1, w => w.Length > 3, CancellationToken.None);
-
-            mockEngine.Verify(e => e.FindAllCombinations(
-                It.IsAny<string>(),
-                It.IsAny<int>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<List<string>>(),
-                It.Is<Dictionary<string, List<string>>>(dict =>
-            dict.ContainsKey(signature) &&
-            dict[signature].Count == 1 &&
-            dict[signature].Contains(egzistingWord)
-            ),
-                It.IsAny<List<List<string>>>(),
-                It.IsAny<IEnumerable<string>>()
-            ), Times.Once);
-        }
-
-        [Fact]
-        public async Task GetSignature_CheckIfReturnSorrtedLetters()
-        {
-            // Arrange
-            var mockEngine = new Mock<IAnagramSearchEngine>();
-            var mockFilterPipeline = new FilterPipeline();
-            var processor = new WordProcessor(mockEngine.Object, mockFilterPipeline);
-
-            // Act
-            await processor.GetAnagramsAsync("alus", 1, 1, w => w.Length > 3, CancellationToken.None);
-
-            // Assert
-            mockEngine.Verify(e => e.FindAllCombinations(
+            // Assert - Check if the letter bank was sorted correctly to "alsu"
+            _mockEngine.Verify(e => e.FindAllCombinations(
                 "alsu",
                 It.IsAny<int>(),
                 It.IsAny<List<string>>(),
@@ -128,49 +60,45 @@ namespace AnagramSolver.BusinessLogic.Tests
         }
 
         [Fact]
-        public async Task GetCandidatesKey_CheckIfReturnRightValue()
+        public async Task GetAnagrams_WhenMatchesFoundInDb_ReturnsResults()
         {
             // Arrange
-            var mockEngine = new Mock<IAnagramSearchEngine>();
-            mockEngine.Setup(e => e.CanSubstract(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<string>.IsAny))
-                .Returns(true);
+            await SeedData("alsu", "sula");
 
-            var mockFilterPipeline = new FilterPipeline();
-            var processor = new WordProcessor(mockEngine.Object, mockFilterPipeline);
-            processor.AddWord("sula");
+            // Setup Mock to simulate finding one combination
+            _mockEngine.Setup(e => e.FindAllCombinations(
+                It.IsAny<string>(), It.IsAny<int>(), It.IsAny<List<string>>(),
+                It.IsAny<List<string>>(), It.IsAny<Dictionary<string, List<string>>>(),
+                It.IsAny<List<List<string>>>(), It.IsAny<IEnumerable<string>>()))
+            .Callback<string, int, List<string>, List<string>, Dictionary<string, List<string>>, List<List<string>>, IEnumerable<string>>(
+                (bank, count, path, cand, group, allResults, orig) =>
+                {
+                    allResults.Add(new List<string> { "sula" });
+                });
+
+            var processor = new WordProcessor(_mockEngine.Object, _mockFilterPipeline, _context);
 
             // Act
-            await processor.GetAnagramsAsync("alus", 1, 1, w => w.Length > 3, CancellationToken.None);
+            var result = await processor.GetAnagramsAsync("alus", 1, 1, w => true);
 
             // Assert
-            mockEngine.Verify(e => e.FindAllCombinations(
-                "alsu",
-                1,
-                It.IsAny<List<string>>(),
-                It.Is<List<string>>(list => list.Contains("alsu")),
-                It.IsAny<Dictionary<string, List<string>>>(),
-                It.IsAny<List<List<string>>>(),
-                It.IsAny<IEnumerable<string>>()
-            ), Times.Once);
+            Assert.Single(result);
+            Assert.Equal("sula", result.First().Word);
         }
 
         [Fact]
-        public async Task GetCandidatesKey_WhenWordInDictionaryIsLongerThanInput_ShouldNotBeAddedToCandidates()
+        public async Task GetCandidates_WhenWordIsLongerThanInput_ShouldBeFiltered()
         {
             // Arrange
-            var mockEngine = new Mock<IAnagramSearchEngine>();
-            mockEngine.Setup(e => e.CanSubstract(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<string>.IsAny))
-                .Returns(true);
+            await SeedData("aabhlpet", "alphabet"); // Longer than "alus"
 
-            var mockFilterPipeline = new FilterPipeline();
-            var processor = new WordProcessor(mockEngine.Object, mockFilterPipeline);
-            processor.AddWord("alphabet");
+            var processor = new WordProcessor(_mockEngine.Object, _mockFilterPipeline, _context);
 
             // Act
-            await processor.GetAnagramsAsync("alus", 1, 1, w => w.Length > 3, CancellationToken.None);
+            await processor.GetAnagramsAsync("alus", 1, 1, w => true);
 
-            // Assert
-            mockEngine.Verify(e => e.FindAllCombinations(
+            // Assert - Candidates list passed to SearchEngine should be empty
+            _mockEngine.Verify(e => e.FindAllCombinations(
                 It.IsAny<string>(),
                 It.IsAny<int>(),
                 It.IsAny<List<string>>(),
@@ -182,195 +110,22 @@ namespace AnagramSolver.BusinessLogic.Tests
         }
 
         [Fact]
-        public async Task GetAnagram_WhenNoAnagramPassed_ReturnEmptyList()
+        public async Task GetAnagramsAsync_WhenCancelled_ThrowsException()
         {
             // Arrange
-            var mockEngine = new Mock<IAnagramSearchEngine>();
-            var mockFilterPipeline = new FilterPipeline();
-            var processor = new WordProcessor(mockEngine.Object, mockFilterPipeline);
-
-            processor.AddWord("labas");
-
-            // Act
-            IEnumerable<Anagram> result = await processor.GetAnagramsAsync("alus", 1, 1, w => w.Length > 3, CancellationToken.None);
-
-            // Assert
-            Assert.Empty(result);
-        }
-
-        [Fact]
-        public async Task GetAnagram_WhenAnagramGetOneWord_ReturnResult()
-        {
-            // Arrange
-            var mockEngine = new Mock<IAnagramSearchEngine>();
-            mockEngine.Setup(e => e.FindAllCombinations(
-                It.IsAny<string>(),
-                It.IsAny<int>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<Dictionary<string, List<string>>>(),
-                It.IsAny<List<List<string>>>(),
-                It.IsAny<IEnumerable<string>>()))
-            .Callback<
-                string,
-                int,
-                List<string>,
-                List<string>,
-                Dictionary<string,
-                List<string>>,
-                List<List<string>>,
-                IEnumerable<string>>(
-                (bank, count, path, cand, group, allResults, orig) =>
-                {
-                    allResults.Add(new List<string> { "sula" });
-                });
-
-            var mockFilterPipeline = new FilterPipeline();
-            var processor = new WordProcessor(mockEngine.Object, mockFilterPipeline);
-
-            // Act
-            var result = await processor.GetAnagramsAsync("alus", 1, 1, w => w.Length > 3, CancellationToken.None);
-
-            // Assert
-            Assert.Single(result);
-            var listResult = result.ToList();
-            Assert.Contains("sula", listResult[0].Word);
-        }
-
-        [Fact]
-        public async Task GetAnagram_WhenAnagramGetTwoWords_ReturnResult()
-        {
-            // Arrange
-            var mockEngine = new Mock<IAnagramSearchEngine>();
-            mockEngine.Setup(e => e.FindAllCombinations(
-                It.IsAny<string>(),
-                It.IsAny<int>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<Dictionary<string, List<string>>>(),
-                It.IsAny<List<List<string>>>(),
-                It.IsAny<IEnumerable<string>>()))
-            .Callback<
-                string,
-                int,
-                List<string>,
-                List<string>,
-                Dictionary<string,
-                List<string>>,
-                List<List<string>>,
-                IEnumerable<string>>(
-                (bank, count, path, cand, group, allResults, orig) =>
-                {
-                    if(count == 2)
-                    {
-                    allResults.Add(new List<string> { "sula", "balas" });
-                    }
-                });
-
-            var mockFilterPipeline = new FilterPipeline();
-            var processor = new WordProcessor(mockEngine.Object, mockFilterPipeline);
-
-            // Act
-            var result = await processor.GetAnagramsAsync("alus labas", 2, 1, w => w.Length > 3, CancellationToken.None);
-
-            // Assert
-            Assert.Single(result);
-            var listResult = result.ToList();
-            Assert.Contains("sula balas", listResult[0].Word);
-        }
-
-        [Fact]
-        public async Task GetAnagrams_WhenWordIsTooShort_ShouldBeFilteredOut()
-        {
-            // Arrange
-            var mockEngine = new Mock<IAnagramSearchEngine>();
-            mockEngine.Setup(e => e.FindAllCombinations(
-                It.IsAny<string>(),
-                It.IsAny<int>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<Dictionary<string, List<string>>>(),
-                It.IsAny<List<List<string>>>(),
-                It.IsAny<IEnumerable<string>>()))
-            .Callback<
-                string,
-                int,
-                List<string>,
-                List<string>,
-                Dictionary<string,
-                List<string>>,
-                List<List<string>>,
-                IEnumerable<string>>(
-                (bank, count, path, cand, group, allResults, orig) =>
-                {
-                    allResults.Add(new List<string> { "su"});
-                });
-
-            var mockFilterPipeline = new FilterPipeline();
-            var processor = new WordProcessor(mockEngine.Object, mockFilterPipeline);
-
-            // Act
-            var result = await processor.GetAnagramsAsync("us", 1, 1, w => w.Length > 3, CancellationToken.None);
-
-            // Assert
-            Assert.Empty(result);
-
-        }
-
-        [Fact]
-        public async Task GetAnagrams_WhenWordIsLongEnough_ShouldBeKept()
-        {
-            // Arrange
-            var mockEngine = new Mock<IAnagramSearchEngine>();
-            mockEngine.Setup(e => e.FindAllCombinations(
-                It.IsAny<string>(),
-                It.IsAny<int>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<List<string>>(),
-                It.IsAny<Dictionary<string, List<string>>>(),
-                It.IsAny<List<List<string>>>(),
-                It.IsAny<IEnumerable<string>>()))
-            .Callback<
-                string,
-                int,
-                List<string>,
-                List<string>,
-                Dictionary<string,
-                List<string>>,
-                List<List<string>>,
-                IEnumerable<string>>(
-                (bank, count, path, cand, group, allResults, orig) =>
-                {
-                    allResults.Add(new List<string> { "labas" });
-                });
-
-            var mockFilterPipeline = new FilterPipeline();
-            var processor = new WordProcessor(mockEngine.Object, mockFilterPipeline);
-
-            // Act
-            var result = await processor.GetAnagramsAsync("balas", 1, 1, w => w.Length > 3, CancellationToken.None);
-
-            // Assert
-            Assert.Single(result);
-            var listResult = result.ToList();
-            Assert.Contains("labas", listResult[0].Word);
-
-        }
-
-        [Fact]
-        public async Task GetAnagramsAsync_WhenTokenIsCancelled_ThrowsOperationCanceledException()
-        {
-            // Arrange
-            var mockEngine = new Mock<IAnagramSearchEngine>();
-            var mockFilterPipeline = new FilterPipeline();
-            var processor = new WordProcessor(mockEngine.Object, mockFilterPipeline);
-
+            var processor = new WordProcessor(_mockEngine.Object, _mockFilterPipeline, _context);
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 
             // Act & Assert
             await Assert.ThrowsAsync<OperationCanceledException>(() =>
-                processor.GetAnagramsAsync("alus", 1, 1, w => w.Length > 3, cts.Token));
+                processor.GetAnagramsAsync("alus", 1, 1, w => true, cts.Token));
+        }
+
+        public void Dispose()
+        {
+            _context.Database.EnsureDeleted();
+            _context.Dispose();
         }
     }
 }

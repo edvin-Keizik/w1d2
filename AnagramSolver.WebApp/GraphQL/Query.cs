@@ -15,9 +15,9 @@ namespace AnagramSolver.WebApp.GraphQL
             return result.Select(a => a.Word);
         }
 
-        public List<string> GetWords([Service] IWordProcessor processor)
+        public async Task<List<string>> GetWords([Service] IWordProcessor processor)
         {
-            return processor.GetDictionary();
+            return await processor.GetDictionary();
         }
     }
 }

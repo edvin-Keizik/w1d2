@@ -8,8 +8,8 @@ namespace AnagramSolver.Contracts
 {
     public class FilterContext
     {
-        public string LetterBank { get; init; }
-        public HashSet<char> AllowedChars { get; init; }
+        public string LetterBank { get; init; } = string.Empty;
+        public HashSet<char> AllowedChars { get; init; } = null!;
         public int BankLength { get; init; }
         public int MinWordLength { get; init; }
     }

@@ -2,8 +2,7 @@
 {
     public interface IWordProcessor
     {
-        bool AddWord(string word);
-        List<string> GetDictionary();
-        void LoadDictionary(List<string> newWords);
+        Task<List<string>> GetDictionary();
+        Task<bool> AddWordAsync(string word);
     }
 }
