@@ -12,6 +12,7 @@ namespace AnagramSolver.BusinessLogic.Tests
         private readonly AnagramDbContext _context;
         private readonly Mock<IAnagramSearchEngine> _mockEngine;
         private readonly FilterPipeline _mockFilterPipeline;
+        private readonly HashSet<string> _signatures;
 
         public WordProcessorTest()
         {
@@ -23,6 +24,7 @@ namespace AnagramSolver.BusinessLogic.Tests
             _context = new AnagramDbContext(options);
             _mockEngine = new Mock<IAnagramSearchEngine>();
             _mockFilterPipeline = new FilterPipeline();
+            _signatures = new HashSet<string>();
 
             // Note: In real scenarios, you'd add steps to the pipeline here if needed
         }
@@ -35,6 +37,8 @@ namespace AnagramSolver.BusinessLogic.Tests
                 Words = words
             });
             await _context.SaveChangesAsync();
+            // Keep the in-memory signature set in sync with seeded data
+            _signatures.Add(signature);
         }
 
         [Fact]
@@ -42,7 +46,7 @@ namespace AnagramSolver.BusinessLogic.Tests
         {
             // Arrange
             await SeedData("alsu", "alus,sula");
-            var processor = new WordProcessor(_mockEngine.Object, _mockFilterPipeline, _context);
+            var processor = new WordProcessor(_mockEngine.Object, _mockFilterPipeline, _context, _signatures);
 
             // Act
             await processor.GetAnagramsAsync("alus", 1, 1, w => true);
@@ -76,7 +80,7 @@ namespace AnagramSolver.BusinessLogic.Tests
                     allResults.Add(new List<string> { "sula" });
                 });
 
-            var processor = new WordProcessor(_mockEngine.Object, _mockFilterPipeline, _context);
+            var processor = new WordProcessor(_mockEngine.Object, _mockFilterPipeline, _context, _signatures);
 
             // Act
             var result = await processor.GetAnagramsAsync("alus", 1, 1, w => true);
@@ -92,7 +96,7 @@ namespace AnagramSolver.BusinessLogic.Tests
             // Arrange
             await SeedData("aabhlpet", "alphabet"); // Longer than "alus"
 
-            var processor = new WordProcessor(_mockEngine.Object, _mockFilterPipeline, _context);
+            var processor = new WordProcessor(_mockEngine.Object, _mockFilterPipeline, _context, _signatures);
 
             // Act
             await processor.GetAnagramsAsync("alus", 1, 1, w => true);
@@ -113,7 +117,7 @@ namespace AnagramSolver.BusinessLogic.Tests
         public async Task GetAnagramsAsync_WhenCancelled_ThrowsException()
         {
             // Arrange
-            var processor = new WordProcessor(_mockEngine.Object, _mockFilterPipeline, _context);
+            var processor = new WordProcessor(_mockEngine.Object, _mockFilterPipeline, _context, _signatures);
             using var cts = new CancellationTokenSource();
             cts.Cancel();
 

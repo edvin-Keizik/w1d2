@@ -3,9 +3,28 @@ using AnagramSolver.BusinessLogic.ChainOfResponsibility;
 using AnagramSolver.BusinessLogic.ChainOfResponsibility.Steps;
 using AnagramSolver.Contracts;
 using AnagramSolver.WebApp.GraphQL;
+using AnagramSolver.WebApp.Plugins;
+using AnagramSolver.WebApp.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.SemanticKernel;
+using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var kernelBuilder = builder.Services.AddKernel();
+kernelBuilder.AddOpenAIChatCompletion(
+    modelId: builder.Configuration["OpenAI:Model"]!,
+    apiKey: builder.Configuration["OpenAI:ApiKey"]!);
+
+kernelBuilder.Plugins.AddFromType<AnagramPlugin>();
+kernelBuilder.Plugins.AddFromType<TimePlugin>();
+
+builder.Services.AddSingleton<AnagramPlugin>();
+builder.Services.AddSingleton<TimePlugin>();
+
+// AI Chat Service and Chat History
+builder.Services.AddSingleton<IChatHistoryService, ChatHistoryService>();
+builder.Services.AddScoped<IAiChatService, AiChatService>();
 
 var anagramSettings = builder.Configuration.GetSection("AnagramSettings").Get<AnagramSettings>()
                ?? throw new Exception("AnagramSettings missing from appsettings.json");
@@ -13,7 +32,15 @@ var anagramSettings = builder.Configuration.GetSection("AnagramSettings").Get<An
 builder.Services.AddDbContext<AnagramDbContext>(options =>
     options.UseSqlServer(anagramSettings.DefaultConnection));
 
-builder.Services.AddScoped<WordProcessor>();
+builder.Services.AddScoped<WordProcessor>(sp =>
+{
+    var searchEngine = sp.GetRequiredService<IAnagramSearchEngine>();
+    var pipeline = sp.GetRequiredService<FilterPipeline>();
+    var context = sp.GetRequiredService<AnagramDbContext>();
+    var signatures = context.WordGroupsEntity.Select(x => x.Signature).ToHashSet();
+
+    return new WordProcessor(searchEngine, pipeline, context, signatures);
+});
 builder.Services.AddScoped<IWordProcessor>(sp => sp.GetRequiredService<WordProcessor>());
 
 builder.Services.AddScoped<IGetAnagrams>(sp =>
@@ -42,6 +69,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddGraphQLServer().AddQueryType<Query>();
+builder.Services.AddHttpClient();
+builder.Services.AddRazorPages();
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
@@ -91,6 +120,7 @@ app.UseRouting();
 app.UseSession();
 app.UseAuthorization();
 
+app.MapRazorPages();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Anagram}/{action=Index}/{id?}");
