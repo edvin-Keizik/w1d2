@@ -12,14 +12,13 @@ namespace AnagramSolver.BusinessLogic
         private readonly FilterPipeline _pipeline;
         private readonly MemoryCache<IEnumerable<Anagram>> _cache = new();
 
-        public WordProcessor(IAnagramSearchEngine searchEngine, FilterPipeline pipeline, AnagramDbContext context)
+        public WordProcessor(IAnagramSearchEngine searchEngine, FilterPipeline pipeline, AnagramDbContext context, HashSet<string> signatures)
         {
             _searchEngine = searchEngine;
             _pipeline = pipeline;
             _context = context;
-
-            _signatures = _context.WordGroupsEntity.Select(x => x.Signature).ToHashSet();
-        }
+            _signatures = signatures;
+            }
 
         public async Task<List<string>> GetDictionary()
         {
@@ -47,7 +46,7 @@ namespace AnagramSolver.BusinessLogic
             }
             else
             {
-                existingGroup.Words += $",{cleanedWord}";
+                existingGroup.Words = string.Concat(existingGroup.Words, ",", cleanedWord);
             }
 
             await _context.SaveChangesAsync();
@@ -59,21 +58,29 @@ namespace AnagramSolver.BusinessLogic
 
         private string GetSignature(string word)
         {
-            char[] wordArray = word.ToCharArray();
-
-            Array.Sort(wordArray);
-
-            return new string(wordArray);
+            if (word.Length <= 128)
+            {
+                Span<char> buffer = stackalloc char[word.Length];
+                word.AsSpan().CopyTo(buffer);
+                buffer.Sort();
+                return new string(buffer);
+            }
+            else
+            {
+                char[] wordArray = word.ToCharArray();
+                Array.Sort(wordArray);
+                return new string(wordArray);
+            }
         }
         private async Task<List<string>> GetCandidatesKeysAsync(string letterBank, int minWordLength)
         {
+            var allowedChars = new HashSet<char>(letterBank);
             var context = new FilterContext
             {
                 LetterBank = letterBank,
-                AllowedChars = new HashSet<char>(letterBank),
+                AllowedChars = allowedChars,
                 BankLength = letterBank.Length,
                 MinWordLength = minWordLength
-
             };
 
             return await Task.Run(() =>
@@ -102,13 +109,15 @@ namespace AnagramSolver.BusinessLogic
         {
             ct.ThrowIfCancellationRequested();
 
-            if(_cache.TryGetCache(input, out var cachedAnagrams))
+            string cacheKey = $"{input}_{minWordLength}";
+            if (_cache.TryGetCache(cacheKey, out var cachedAnagrams))
             {
                 return cachedAnagrams;
             }
 
-            string letterBank = GetSignature(input.Replace(" ", "").ToLower());
-            var originalWords = input.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            string lowerInput = input.ToLower();
+            string letterBank = GetSignature(lowerInput.Replace(" ", ""));
+            var originalWords = lowerInput.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
             var candidates = await GetCandidatesKeysAsync(letterBank, minWordLength);
 
@@ -120,6 +129,7 @@ namespace AnagramSolver.BusinessLogic
             {
                 return Task.Run(() =>
                 {
+                    ct.ThrowIfCancellationRequested();
                     var resultsForThisCount = new List<List<string>>();
                     _searchEngine.FindAllCombinations(
                         letterBank,
@@ -135,9 +145,9 @@ namespace AnagramSolver.BusinessLogic
 
             var allTaskResults = await Task.WhenAll(searchTasks);
 
-            var flatResults = allTaskResults.SelectMany(list => list);
+            var flatResults = allTaskResults.SelectMany(list => list).ToList();
 
-            var processingQuery = flatResults.Count() > 5000
+            var processingQuery = flatResults.Count > 5000
                 ? flatResults.AsParallel().AsOrdered()
                 : flatResults.AsEnumerable();
 
@@ -147,8 +157,7 @@ namespace AnagramSolver.BusinessLogic
                 .Select(str => new Anagram { Word = str })
                 .ToList();
 
-
-            _cache.AddCache(input, finalResults);
+            _cache.AddCache(cacheKey, finalResults);
             return finalResults;
         }
     }

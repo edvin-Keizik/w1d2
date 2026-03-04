@@ -1,0 +1,261 @@
+@page
+@model AnagramSolver.WebApp.Pages.ChatHistoryModel
+@{
+    ViewData["Title"] = "Chat History Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="/css/chat-history.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+<div class="history-container">
+    <div class="page-header">
+        <h1><i class="fas fa-history"></i> Chat History Management</h1>
+        <p>View, manage, and analyze your conversation history</p>
+    </div>
+
+    <div class="controls-area">
+        <input 
+            type="text" 
+            class="search-input" 
+            id="searchInput" 
+            placeholder="Search sessions by ID..."
+            onkeyup="filterSessions()">
+        <button class="filter-btn" id="filterBtn" onclick="toggleFilter()">
+            <i class="fas fa-filter"></i> Filter
+        </button>
+        <button class="action-btn" onclick="loadSessions()">
+            <i class="fas fa-sync"></i> Refresh
+        </button>
+    </div>
+
+    <div id="sessionsContainer">
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="historyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-comments"></i> Chat History
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="history-list" id="historyList">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" id="deleteHistoryBtn" onclick="deleteCurrentHistory()">
+                    <i class="fas fa-trash"></i> Delete History
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<script>
+    let allSessions = [];
+    let currentSessionId = null;
+    const historyModal = new bootstrap.Modal(document.getElementById('historyModal'), {});
+
+    async function loadSessions() {
+        try {
+            const response = await fetch('/api/ai/chat/sessions/active');
+            if (!response.ok) throw new Error('Failed to load sessions');
+            const data = await response.json();
+            allSessions = data.sessions || [];
+            displaySessions(allSessions);
+            showToast(`Loaded ${allSessions.length} sessions`, 'info');
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Failed to load sessions', 'error');
+            displayEmptyState();
+        }
+    }
+
+    function displaySessions(sessions) {
+        const container = document.getElementById('sessionsContainer');
+
+        if (sessions.length === 0) {
+            displayEmptyState();
+            return;
+        }
+
+        container.innerHTML = `<div class="sessions-grid">
+            ${sessions.map(sessionId => `
+                <div class="session-card">
+                    <div class="session-header">
+                        <div class="session-title">${sessionId}</div>
+                        <span class="session-badge">Active</span>
+                    </div>
+                    <div class="session-body">
+                        <div class="session-stats">
+                            <div class="stat">
+                                <div class="stat-value" id="msg-count-${sessionId}">-</div>
+                                <div class="stat-label">Messages</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value" id="last-msg-${sessionId}">-</div>
+                                <div class="stat-label">Last Active</div>
+                            </div>
+                        </div>
+                        <div class="session-preview" id="preview-${sessionId}">
+                            Loading...
+                        </div>
+                        <div class="session-actions">
+                            <button class="session-btn" onclick="viewHistory('${sessionId}')">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="session-btn" onclick="openChat('${sessionId}')">
+                                <i class="fas fa-arrow-right"></i> Open
+                            </button>
+                            <button class="session-btn danger" onclick="deleteSession('${sessionId}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>`;
+
+        sessions.forEach(loadSessionDetails);
+    }
+
+    async function loadSessionDetails(sessionId) {
+        try {
+            const response = await fetch(`/api/ai/chat/${sessionId}/history`);
+            if (!response.ok) throw new Error('Failed to load session details');
+            const data = await response.json();
+
+            document.getElementById(`msg-count-${sessionId}`).textContent = data.messages.length;
+
+            if (data.messages.length > 0) {
+                const lastMsg = data.messages[data.messages.length - 1];
+                const now = new Date();
+                const messageTime = new Date(lastMsg.timestamp * 1000);
+                document.getElementById(`last-msg-${sessionId}`).textContent = getTimeAgo(messageTime);
+
+                const preview = data.messages.slice(-3).map(m => `
+                    <strong>${m.role}:</strong> ${m.content.substring(0, 50)}${m.content.length > 50 ? '...' : ''}
+                `).join('<br><br>');
+                document.getElementById(`preview-${sessionId}`).innerHTML = preview;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById(`preview-${sessionId}`).textContent = 'Error loading preview';
+        }
+    }
+
+    async function viewHistory(sessionId) {
+        currentSessionId = sessionId;
+        const historyList = document.getElementById('historyList');
+        historyList.innerHTML = '<div class="loading-container"><div class="loading-spinner"></div></div>';
+
+        try {
+            const response = await fetch(`/api/ai/chat/${sessionId}/history`);
+            if (!response.ok) throw new Error('Failed to load history');
+            const data = await response.json();
+
+            historyList.innerHTML = `<div class="history-list">
+                ${data.messages.map(msg => `
+                    <div class="history-item">
+                        <div class="history-icon">
+                            <i class="fas ${msg.role === 'User' ? 'fa-user' : 'fa-robot'}"></i>
+                        </div>
+                        <div class="history-content">
+                            <div class="history-role">${msg.role}</div>
+                            <div class="history-message">${msg.content}</div>
+                            <div class="history-time">${new Date(msg.timestamp * 1000).toLocaleString('lt-LT')}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>`;
+
+            historyModal.show();
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Failed to load history', 'error');
+        }
+    }
+
+    async function deleteSession(sessionId) {
+        if (!confirm(`Delete chat history for session: ${sessionId}?`)) return;
+
+        try {
+            const response = await fetch(`/api/ai/chat/${sessionId}/history`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) throw new Error('Failed to delete');
+            showToast('Session deleted successfully', 'success');
+            loadSessions();
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Failed to delete session', 'error');
+        }
+    }
+
+    async function deleteCurrentHistory() {
+        if (!currentSessionId) return;
+        await deleteSession(currentSessionId);
+        historyModal.hide();
+    }
+
+    function openChat(sessionId) {
+        window.location.href = `/ai-chat?session=${sessionId}`;
+    }
+
+    function filterSessions() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allSessions.filter(id => id.toLowerCase().includes(search));
+        displaySessions(filtered);
+    }
+
+    function displayEmptyState() {
+        document.getElementById('sessionsContainer').innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <div class="empty-state-title">No Chat Sessions</div>
+                <div class="empty-state-text">Start a new conversation to see it here</div>
+                <button class="empty-state-btn" onclick="window.location.href='/ai-chat'">
+                    <i class="fas fa-comments"></i> Start Chatting
+                </button>
+            </div>
+        `;
+    }
+
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
+        container.appendChild(toast);
+
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function getTimeAgo(date) {
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+
+        if (seconds < 60) return 'Now';
+        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+        if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+        return `${Math.floor(seconds / 86400)}d ago`;
+    }
+
+    document.addEventListener('DOMContentLoaded', loadSessions);
+</script>

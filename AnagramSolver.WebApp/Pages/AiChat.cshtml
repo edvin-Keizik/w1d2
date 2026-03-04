@@ -1,0 +1,254 @@
+@page
+@model AnagramSolver.WebApp.Pages.AiChatModel
+@{
+    ViewData["Title"] = "AI Anagram Chat";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="/css/ai-chat.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+<div class="chat-container">
+    <div class="chat-box">
+        <div class="chat-header">
+            <div class="chat-header-title">
+                <i class="fas fa-robot"></i>
+                AI Anagram Assistant
+            </div>
+            <div class="chat-header-icons">
+                <button id="newChatBtn" title="New Chat" onclick="startNewChat()">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button id="clearBtn" title="Clear Chat" onclick="clearChat()">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="messages-area" id="messagesArea">
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="empty-state-text">Start a Conversation</div>
+                <div class="empty-state-subtext">Ask me about anagrams, word puzzles, and more!</div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-wrapper">
+                <textarea 
+                    class="chat-input" 
+                    id="messageInput" 
+                    placeholder="Ask about anagrams... e.g., 'Rask anagramas žodžiui katas'"
+                    rows="1"
+                    onkeypress="handleKeyPress(event)">
+                </textarea>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send Message">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="session-info">
+            Session: <span id="sessionId">@Model.SessionId</span> | 
+            <span id="messageCount">0 messages</span>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<script>
+    let messageHistory = [];
+    let isLoading = false;
+    let currentSessionId = document.getElementById('sessionId').textContent;
+
+    function loadMessageHistory() {
+        const stored = localStorage.getItem(`chat-${currentSessionId}`);
+        if (stored) {
+            messageHistory = JSON.parse(stored);
+            displayMessages();
+        }
+    }
+
+    function saveMessageHistory() {
+        localStorage.setItem(`chat-${currentSessionId}`, JSON.stringify(messageHistory));
+    }
+
+    function startNewChat() {
+        const newSessionId = generateSessionId();
+        currentSessionId = newSessionId;
+        document.getElementById('sessionId').textContent = newSessionId;
+        messageHistory = [];
+        displayMessages();
+        showToast('New chat started!', 'success');
+    }
+
+    function generateSessionId() {
+        return 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    }
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+
+        if (!message || isLoading) return;
+
+        messageHistory.push({
+            role: 'user',
+            content: message,
+            time: new Date().toLocaleTimeString('lt-LT')
+        });
+
+        input.value = '';
+        input.style.height = 'auto';
+        input.focus();
+
+        displayMessages();
+        saveMessageHistory();
+
+        isLoading = true;
+        updateSendButton();
+
+        try {
+            messageHistory.push({
+                role: 'assistant',
+                content: '<div class="loading-dots"><span></span><span></span><span></span></div>',
+                isLoading: true,
+                time: new Date().toLocaleTimeString('lt-LT')
+            });
+            displayMessages();
+
+            const response = await fetch('/api/ai/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: message,
+                    sessionId: currentSessionId
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            messageHistory.pop();
+            messageHistory.push({
+                role: 'assistant',
+                content: data.response,
+                time: new Date().toLocaleTimeString('lt-LT')
+            });
+
+            displayMessages();
+            saveMessageHistory();
+            showToast('Message sent successfully!', 'success');
+        } catch (error) {
+            console.error('Error:', error);
+            messageHistory.pop();
+            messageHistory.push({
+                role: 'assistant',
+                content: `<span class="error-message">⚠️ Sorry, I couldn't process that. Please try again.</span>`,
+                time: new Date().toLocaleTimeString('lt-LT')
+            });
+            displayMessages();
+            saveMessageHistory();
+            showToast('Failed to send message. Please try again.', 'error');
+        } finally {
+            isLoading = false;
+            updateSendButton();
+        }
+    }
+
+    // Display messages
+    function displayMessages() {
+        const messagesArea = document.getElementById('messagesArea');
+
+        if (messageHistory.length === 0) {
+            messagesArea.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="empty-state-text">Start a Conversation</div>
+                    <div class="empty-state-subtext">Ask me about anagrams, word puzzles, and more!</div>
+                </div>
+            `;
+            return;
+        }
+
+        messagesArea.innerHTML = messageHistory.map((msg, index) => `
+            <div class="message ${msg.role}">
+                <div>
+                    <div class="message-content">
+                        ${msg.content}
+                    </div>
+                    <div class="message-time">${msg.time}</div>
+                </div>
+            </div>
+        `).join('');
+
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+
+        const userMessages = messageHistory.filter(m => m.role === 'user').length;
+        document.getElementById('messageCount').textContent = `${messageHistory.length} messages`;
+    }
+
+    // Clear chat
+    function clearChat() {
+        if (confirm('Are you sure you want to clear this chat? This action cannot be undone.')) {
+            fetch(`/api/ai/chat/${currentSessionId}/history`, {
+                method: 'DELETE'
+            }).then(() => {
+                messageHistory = [];
+                localStorage.removeItem(`chat-${currentSessionId}`);
+                displayMessages();
+                showToast('Chat cleared successfully!', 'success');
+            }).catch(error => {
+                console.error('Error:', error);
+                showToast('Failed to clear chat.', 'error');
+            });
+        }
+    }
+
+    function updateSendButton() {
+        const sendBtn = document.getElementById('sendBtn');
+        const input = document.getElementById('messageInput');
+        sendBtn.disabled = isLoading || !input.value.trim();
+    }
+
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    document.getElementById('messageInput').addEventListener('input', function () {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        updateSendButton();
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        loadMessageHistory();
+        updateSendButton();
+    });
+</script>
