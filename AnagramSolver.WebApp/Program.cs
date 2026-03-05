@@ -1,6 +1,8 @@
 using AnagramSolver.BusinessLogic;
 using AnagramSolver.BusinessLogic.ChainOfResponsibility;
 using AnagramSolver.BusinessLogic.ChainOfResponsibility.Steps;
+using AnagramSolver.BusinessLogic.FrequencyAnalysis;
+using AnagramSolver.Contracts.FrequencyAnalysis;
 using AnagramSolver.Contracts;
 using AnagramSolver.WebApp.GraphQL;
 using AnagramSolver.WebApp.Plugins;
@@ -68,6 +70,11 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Frequency Analysis Services
+builder.Services.AddSingleton<IStopWordProvider, StopWordProvider>();
+builder.Services.AddScoped<IFrequencyAnalysisService, FrequencyAnalysisService>();
+
 builder.Services.AddGraphQLServer().AddQueryType<Query>();
 builder.Services.AddHttpClient();
 builder.Services.AddRazorPages();
@@ -80,6 +87,22 @@ builder.Services.AddSession(options =>
 });
 
 var app = builder.Build();
+
+// Initialize stop words on startup
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var stopWordProvider = scope.ServiceProvider.GetRequiredService<IStopWordProvider>();
+        await stopWordProvider.InitializeAsync(CancellationToken.None);
+        app.Logger.LogInformation("Stop words initialized successfully");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Failed to initialize stop words. Application will not function correctly.");
+        throw;  // Fail fast - don't continue if stop words fail to load
+    }
+}
 
 using (var scope = app.Services.CreateScope())
 {
