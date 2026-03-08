@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/anagram-search/components/search-form.component.scss"],
+  "sourcesContent": [".search-form {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 0.5rem;\r\n}\r\n"],
+  "mappings": ";AAAA,CAAA;AACE,WAAA;AACA,kBAAA;AACA,OAAA;;",
+  "names": []
+}

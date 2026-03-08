@@ -1,0 +1,34 @@
+<form class="card analysis-form" (ngSubmit)="onSubmit()">
+  <div class="form-group">
+    <label for="analysisText">Text to Analyze</label>
+    <textarea
+      id="analysisText"
+      [formControl]="textControl"
+      rows="6"
+      placeholder="Paste or type text here for frequency analysis..."
+    ></textarea>
+    <div class="form-meta">
+      <span>{{ textControl.value | wordCount }} words</span>
+      <span>{{ textControl.value.length }} / 100,000 characters</span>
+    </div>
+    @if (textControl.invalid && textControl.touched) {
+      @if (textControl.hasError('required')) {
+        <div class="error-msg">Text is required</div>
+      }
+      @if (textControl.hasError('maxlength')) {
+        <div class="error-msg">Maximum 100,000 characters allowed</div>
+      }
+    }
+  </div>
+  <button
+    type="submit"
+    class="btn btn-primary"
+    [disabled]="textControl.invalid || isLoading()"
+  >
+    @if (isLoading()) {
+      Analyzing...
+    } @else {
+      Analyze Frequency
+    }
+  </button>
+</form>

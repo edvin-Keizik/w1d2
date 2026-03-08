@@ -22,6 +22,27 @@ namespace AnagramSolver.WebApp.Api
             return Ok(words);
         }
 
+        [HttpGet("paginated")]
+        public async Task<IActionResult> GetPaginated([FromQuery] int page = 1, [FromQuery] int pageSize = 90)
+        {
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 500) pageSize = 90;
+
+            var allWords = await _processor.GetDictionary();
+            var paginatedWords = allWords
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return Ok(new
+            {
+                words = paginatedWords,
+                totalCount = allWords.Count,
+                page,
+                pageSize
+            });
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {

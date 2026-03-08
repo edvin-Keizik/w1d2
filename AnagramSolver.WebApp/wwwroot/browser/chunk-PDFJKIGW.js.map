@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/core/services/settings.service.ts"],
+  "sourcesContent": ["import { Injectable, inject, signal } from '@angular/core';\r\nimport { ApiService } from './api.service';\r\nimport { AppSettings } from '../models/settings.model';\r\n\r\n@Injectable({ providedIn: 'root' })\r\nexport class SettingsService {\r\n  private readonly _api = inject(ApiService);\r\n\r\n  readonly settings = signal<AppSettings | null>(null);\r\n  readonly loaded = signal(false);\r\n\r\n  load(): void {\r\n    this._api.get<AppSettings>('settings').subscribe({\r\n      next: (s) => {\r\n        this.settings.set(s);\r\n        this.loaded.set(true);\r\n      },\r\n      error: () => {\r\n        this.settings.set({ minWordLength: 3, maxAnagramsToShow: 3 });\r\n        this.loaded.set(true);\r\n      },\r\n    });\r\n  }\r\n}\r\n"],
+  "mappings": ";;;;;;;;;;AAKM,IAAO,kBAAP,MAAO,iBAAe;EACT,OAAO,OAAO,UAAU;EAEhC,WAAW,OAA2B,IAAI;EAC1C,SAAS,OAAO,KAAK;EAE9B,OAAI;AACF,SAAK,KAAK,IAAiB,UAAU,EAAE,UAAU;MAC/C,MAAM,CAAC,MAAK;AACV,aAAK,SAAS,IAAI,CAAC;AACnB,aAAK,OAAO,IAAI,IAAI;MACtB;MACA,OAAO,MAAK;AACV,aAAK,SAAS,IAAI,EAAE,eAAe,GAAG,mBAAmB,EAAC,CAAE;AAC5D,aAAK,OAAO,IAAI,IAAI;MACtB;KACD;EACH;;qCAjBW,kBAAe;EAAA;4EAAf,kBAAe,SAAf,iBAAe,WAAA,YADF,OAAM,CAAA;;;sEACnB,iBAAe,CAAA;UAD3B;WAAW,EAAE,YAAY,OAAM,CAAE;;;",
+  "names": []
+}

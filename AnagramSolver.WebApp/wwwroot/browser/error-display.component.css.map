@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/shared/components/error-display/error-display.component.scss"],
+  "sourcesContent": [".error-container {\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n  padding: 2rem;\r\n  background: #fef2f2;\r\n  border: 1px solid #fecaca;\r\n  border-radius: 8px;\r\n}\r\n\r\n.error-icon { font-size: 2rem; }\r\n.error-message { color: #dc2626; margin: 0.5rem 0; }\r\n\r\n.retry-btn {\r\n  padding: 0.5rem 1rem;\r\n  background: #dc2626;\r\n  color: white;\r\n  border: none;\r\n  border-radius: 4px;\r\n  cursor: pointer;\r\n}\r\n\r\n.retry-btn:hover { background: #b91c1c; }\r\n"],
+  "mappings": ";AAAA,CAAA;AACE,WAAA;AACA,kBAAA;AACA,eAAA;AACA,WAAA;AACA,cAAA;AACA,UAAA,IAAA,MAAA;AACA,iBAAA;;AAGF,CAAA;AAAc,aAAA;;AACd,CAAA;AAAiB,SAAA;AAAgB,UAAA,OAAA;;AAEjC,CAAA;AACE,WAAA,OAAA;AACA,cAAA;AACA,SAAA;AACA,UAAA;AACA,iBAAA;AACA,UAAA;;AAGF,CATA,SASA;AAAmB,cAAA;;",
+  "names": []
+}

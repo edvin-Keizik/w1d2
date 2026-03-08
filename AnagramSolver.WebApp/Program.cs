@@ -8,10 +8,19 @@ using AnagramSolver.WebApp.GraphQL;
 using AnagramSolver.WebApp.Plugins;
 using AnagramSolver.WebApp.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.SemanticKernel;
 using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AngularDev", policy =>
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
 
 var kernelBuilder = builder.Services.AddKernel();
 kernelBuilder.AddOpenAIChatCompletion(
@@ -66,7 +75,6 @@ builder.Services.AddSingleton<FilterPipeline>(sp =>
     return pipeline;
 });
 
-builder.Services.AddControllersWithViews();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -77,14 +85,6 @@ builder.Services.AddScoped<IFrequencyAnalysisService, FrequencyAnalysisService>(
 
 builder.Services.AddGraphQLServer().AddQueryType<Query>();
 builder.Services.AddHttpClient();
-builder.Services.AddRazorPages();
-
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-});
 
 var app = builder.Build();
 
@@ -132,20 +132,21 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
 app.MapGraphQL();
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+
+app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = new PhysicalFileProvider(System.IO.Path.Combine(app.Environment.WebRootPath, "browser")) });
+app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(System.IO.Path.Combine(app.Environment.WebRootPath, "browser")) });
+
 app.UseRouting();
-app.UseSession();
+app.UseCors("AngularDev");
 app.UseAuthorization();
 
-app.MapRazorPages();
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Anagram}/{action=Index}/{id?}");
+app.MapControllers();
+
+app.MapFallbackToFile("browser/index.html");
 
 app.Run();

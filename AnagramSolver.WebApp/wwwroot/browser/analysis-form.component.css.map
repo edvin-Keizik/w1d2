@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/analysis/components/analysis-form.component.scss"],
+  "sourcesContent": [".analysis-form {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 0.5rem;\r\n}\r\n\r\n.form-meta {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  font-size: 0.75rem;\r\n  color: #9ca3af;\r\n  margin-top: 0.25rem;\r\n}\r\n"],
+  "mappings": ";AAAA,CAAA;AACE,WAAA;AACA,kBAAA;AACA,OAAA;;AAGF,CAAA;AACE,WAAA;AACA,mBAAA;AACA,aAAA;AACA,SAAA;AACA,cAAA;;",
+  "names": []
+}

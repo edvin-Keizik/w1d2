@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/layout/shell.component.scss"],
+  "sourcesContent": [":host {\r\n  display: flex;\r\n  flex-direction: column;\r\n  min-height: 100vh;\r\n}\r\n\r\n.main-content {\r\n  flex: 1;\r\n  padding: 1.5rem;\r\n  max-width: 1200px;\r\n  margin: 0 auto;\r\n  width: 100%;\r\n  box-sizing: border-box;\r\n}\r\n\r\n.global-loading-bar {\r\n  position: fixed;\r\n  top: 0;\r\n  left: 0;\r\n  right: 0;\r\n  height: 3px;\r\n  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6);\r\n  background-size: 200% 100%;\r\n  animation: shimmer 1.5s infinite;\r\n  z-index: 9999;\r\n}\r\n\r\n@keyframes shimmer {\r\n  0% { background-position: -200% 0; }\r\n  100% { background-position: 200% 0; }\r\n}\r\n"],
+  "mappings": ";AAAA;AACE,WAAA;AACA,kBAAA;AACA,cAAA;;AAGF,CAAA;AACE,QAAA;AACA,WAAA;AACA,aAAA;AACA,UAAA,EAAA;AACA,SAAA;AACA,cAAA;;AAGF,CAAA;AACE,YAAA;AACA,OAAA;AACA,QAAA;AACA,SAAA;AACA,UAAA;AACA;IAAA;MAAA,KAAA;MAAA,OAAA;MAAA,OAAA;MAAA;AACA,mBAAA,KAAA;AACA,aAAA,QAAA,KAAA;AACA,WAAA;;AAGF,WAJE;AAKA;AAAK,yBAAA,MAAA;;AACL;AAAO,yBAAA,KAAA;;;",
+  "names": []
+}

@@ -1,0 +1,32 @@
+<form class="card word-form" (ngSubmit)="onSubmit()">
+  <div class="form-group">
+    <label for="newWord">New Word</label>
+    <input
+      id="newWord"
+      type="text"
+      [formControl]="wordControl"
+      placeholder="Enter a new word..."
+      autocomplete="off"
+    />
+    @if (wordControl.invalid && wordControl.touched) {
+      @if (wordControl.hasError('required')) {
+        <div class="error-msg">Word is required</div>
+      }
+      @if (wordControl.hasError('minlength')) {
+        <div class="error-msg">Minimum {{ minLength() }} characters</div>
+      }
+      @if (wordControl.hasError('pattern')) {
+        <div class="error-msg">Only letters are allowed</div>
+      }
+    }
+  </div>
+  <app-add-button
+    [disabled]="wordControl.invalid || isLoading()"
+  >
+    @if (isLoading()) {
+      Adding...
+    } @else {
+      Add Word
+    }
+  </app-add-button>
+</form>

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/ai-chat/components/chat-input.component.scss"],
+  "sourcesContent": [".chat-input {\r\n  display: flex;\r\n  gap: 0.5rem;\r\n  padding: 0.75rem;\r\n  background: white;\r\n  border-top: 1px solid #e5e7eb;\r\n  border-radius: 0 0 8px 8px;\r\n}\r\n\r\n.chat-input input {\r\n  flex: 1;\r\n  padding: 0.5rem 0.75rem;\r\n  border: 1px solid #d1d5db;\r\n  border-radius: 6px;\r\n  font-size: 0.95rem;\r\n}\r\n\r\n.chat-input input:focus {\r\n  outline: none;\r\n  border-color: #3b82f6;\r\n}\r\n"],
+  "mappings": ";AAAA,CAAA;AACE,WAAA;AACA,OAAA;AACA,WAAA;AACA,cAAA;AACA,cAAA,IAAA,MAAA;AACA,iBAAA,EAAA,EAAA,IAAA;;AAGF,CATA,WASA;AACE,QAAA;AACA,WAAA,OAAA;AACA,UAAA,IAAA,MAAA;AACA,iBAAA;AACA,aAAA;;AAGF,CAjBA,WAiBA,KAAA;AACE,WAAA;AACA,gBAAA;;",
+  "names": []
+}

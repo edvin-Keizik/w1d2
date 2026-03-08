@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/chat-history/components/session-list.component.scss"],
+  "sourcesContent": [".session-list {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 0.5rem;\r\n}\r\n\r\n.session-card {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  align-items: center;\r\n  padding: 0.75rem 1rem;\r\n  background: white;\r\n  border: 1px solid #e5e7eb;\r\n  border-radius: 6px;\r\n}\r\n\r\n.session-id {\r\n  cursor: pointer;\r\n  font-family: monospace;\r\n  font-size: 0.85rem;\r\n  color: #3b82f6;\r\n}\r\n\r\n.session-id:hover { text-decoration: underline; }\r\n.session-actions { display: flex; gap: 0.5rem; }\r\n.btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; }\r\n"],
+  "mappings": ";AAAA,CAAA;AACE,WAAA;AACA,kBAAA;AACA,OAAA;;AAGF,CAAA;AACE,WAAA;AACA,mBAAA;AACA,eAAA;AACA,WAAA,QAAA;AACA,cAAA;AACA,UAAA,IAAA,MAAA;AACA,iBAAA;;AAGF,CAAA;AACE,UAAA;AACA,eAAA;AACA,aAAA;AACA,SAAA;;AAGF,CAPA,UAOA;AAAoB,mBAAA;;AACpB,CAAA;AAAmB,WAAA;AAAe,OAAA;;AAClC,CAAA;AAAU,WAAA,QAAA;AAAyB,aAAA;;",
+  "names": []
+}

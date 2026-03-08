@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/shared/components/toast/toast.component.scss"],
+  "sourcesContent": [".toast-container {\r\n  position: fixed;\r\n  top: 1rem;\r\n  right: 1rem;\r\n  z-index: 1000;\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 0.5rem;\r\n}\r\n\r\n.toast {\r\n  padding: 0.75rem 1.25rem;\r\n  border-radius: 6px;\r\n  color: white;\r\n  cursor: pointer;\r\n  min-width: 250px;\r\n  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);\r\n  animation: slideIn 0.3s ease-out;\r\n}\r\n\r\n.toast--success { background: #16a34a; }\r\n.toast--error { background: #dc2626; }\r\n.toast--info { background: #2563eb; }\r\n\r\n@keyframes slideIn {\r\n  from { transform: translateX(100%); opacity: 0; }\r\n  to { transform: translateX(0); opacity: 1; }\r\n}\r\n"],
+  "mappings": ";AAAA,CAAA;AACE,YAAA;AACA,OAAA;AACA,SAAA;AACA,WAAA;AACA,WAAA;AACA,kBAAA;AACA,OAAA;;AAGF,CAAA;AACE,WAAA,QAAA;AACA,iBAAA;AACA,SAAA;AACA,UAAA;AACA,aAAA;AACA,cAAA,EAAA,IAAA,KAAA,KAAA,CAAA,EAAA,CAAA,EAAA,CAAA,EAAA;AACA,aAAA,QAAA,KAAA;;AAGF,CAAA;AAAkB,cAAA;;AAClB,CAAA;AAAgB,cAAA;;AAChB,CAAA;AAAe,cAAA;;AAEf,WAPE;AAQA;AAAO,eAAA,WAAA;AAA6B,aAAA;;AACpC;AAAK,eAAA,WAAA;AAA0B,aAAA;;;",
+  "names": []
+}

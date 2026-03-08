@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/shared/components/empty-state/empty-state.component.ts", "src/app/shared/components/empty-state/empty-state.component.html"],
+  "sourcesContent": ["import { Component, input } from '@angular/core';\r\n\r\n@Component({\r\n  selector: 'app-empty-state',\r\n  standalone: true,\r\n  templateUrl: './empty-state.component.html',\r\n  styleUrl: './empty-state.component.scss',\r\n})\r\nexport class EmptyStateComponent {\r\n  message = input('No data available');\r\n}\r\n", "<div class=\"empty-state\">\r\n  <div class=\"empty-icon\">📭</div>\r\n  <p>{{ message() }}</p>\r\n</div>\r\n"],
+  "mappings": ";;;;;;;;;;;;;;AAQM,IAAO,sBAAP,MAAO,qBAAmB;EAC9B,UAAU,MAAM,mBAAmB;;qCADxB,sBAAmB;EAAA;yEAAnB,sBAAmB,WAAA,CAAA,CAAA,iBAAA,CAAA,GAAA,QAAA,EAAA,SAAA,CAAA,GAAA,SAAA,EAAA,GAAA,OAAA,GAAA,MAAA,GAAA,QAAA,CAAA,CAAA,GAAA,aAAA,GAAA,CAAA,GAAA,YAAA,CAAA,GAAA,UAAA,SAAA,6BAAA,IAAA,KAAA;AAAA,QAAA,KAAA,GAAA;ACRhC,MAAA,yBAAA,GAAA,OAAA,CAAA,EAAyB,GAAA,OAAA,CAAA;AACC,MAAA,iBAAA,GAAA,WAAA;AAAE,MAAA,uBAAA;AAC1B,MAAA,yBAAA,GAAA,GAAA;AAAG,MAAA,iBAAA,CAAA;AAAe,MAAA,uBAAA,EAAI;;;AAAnB,MAAA,oBAAA,CAAA;AAAA,MAAA,4BAAA,IAAA,QAAA,CAAA;;;;;sEDMQ,qBAAmB,CAAA;UAN/B;uBACW,mBAAiB,YACf,MAAI,UAAA,oHAAA,QAAA,CAAA,sSAAA,EAAA,CAAA;;;;6EAIL,qBAAmB,EAAA,WAAA,uBAAA,UAAA,kEAAA,YAAA,EAAA,CAAA;AAAA,GAAA;",
+  "names": []
+}

@@ -1,0 +1,29 @@
+<h1 class="page-title">Dictionary</h1>
+
+@switch (dictSvc.state().stage) {
+  @case ('idle') {
+    <app-loading-spinner />
+  }
+  @case ('loading') {
+    <app-loading-spinner />
+  }
+  @case ('loaded') {
+    @if (loadedData().words.length === 0) {
+      <app-empty-state message="Dictionary is empty" />
+    } @else {
+      <app-word-grid
+        [words]="loadedData().words"
+        (wordClick)="onWordClick($event)"
+      />
+      <app-pagination
+        [currentPage]="currentPage()"
+        [totalCount]="loadedData().totalCount"
+        [pageSize]="90"
+        (pageChange)="onPageChange($event)"
+      />
+    }
+  }
+  @case ('error') {
+    <app-error-display [message]="errorMsg()" (retry)="loadPage()" />
+  }
+}

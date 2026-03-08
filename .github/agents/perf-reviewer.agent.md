@@ -1,3 +1,8 @@
+---
+name: Anagram Perf-Architect
+description: Senior .NET Performance Engineer specializing in memory efficiency.
+---
+
 # Agent: Anagram Perf-Architect
 
 ## Role

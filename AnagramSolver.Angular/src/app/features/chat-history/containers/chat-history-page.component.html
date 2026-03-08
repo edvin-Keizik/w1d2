@@ -1,0 +1,31 @@
+<h1 class="page-title">Chat History</h1>
+
+@switch (chatSvc.sessionsState().stage) {
+  @case ('idle') {
+    <app-loading-spinner />
+  }
+  @case ('loading') {
+    <app-loading-spinner />
+  }
+  @case ('loaded') {
+    @if (sessions().length === 0) {
+      <app-empty-state message="No chat sessions found" />
+    } @else {
+      <app-session-list
+        [sessions]="sessions()"
+        (select)="onSelect($event)"
+        (deleteSession)="onDelete($event)"
+      />
+    }
+  }
+  @case ('error') {
+    <app-error-display [message]="sessionsError()" (retry)="chatSvc.loadActiveSessions()" />
+  }
+}
+
+@if (selectedHistory()) {
+  <app-session-detail-modal
+    [data]="selectedHistory()!"
+    (close)="selectedHistory.set(null)"
+  />
+}

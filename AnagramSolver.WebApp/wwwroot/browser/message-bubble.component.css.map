@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/ai-chat/components/message-bubble.component.scss"],
+  "sourcesContent": [".bubble {\r\n  max-width: 75%;\r\n  padding: 0.75rem 1rem;\r\n  border-radius: 12px;\r\n  line-height: 1.4;\r\n}\r\n\r\n.user {\r\n  align-self: flex-end;\r\n  background: #3b82f6;\r\n  color: white;\r\n  border-bottom-right-radius: 4px;\r\n}\r\n\r\n.assistant {\r\n  align-self: flex-start;\r\n  background: white;\r\n  border: 1px solid #e5e7eb;\r\n  border-bottom-left-radius: 4px;\r\n}\r\n\r\n.bubble-meta {\r\n  font-size: 0.65rem;\r\n  margin-top: 0.25rem;\r\n  opacity: 0.6;\r\n}\r\n"],
+  "mappings": ";AAAA,CAAA;AACE,aAAA;AACA,WAAA,QAAA;AACA,iBAAA;AACA,eAAA;;AAGF,CAAA;AACE,cAAA;AACA,cAAA;AACA,SAAA;AACA,8BAAA;;AAGF,CAAA;AACE,cAAA;AACA,cAAA;AACA,UAAA,IAAA,MAAA;AACA,6BAAA;;AAGF,CAAA;AACE,aAAA;AACA,cAAA;AACA,WAAA;;",
+  "names": []
+}

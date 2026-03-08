@@ -1,0 +1,7 @@
+<div class="word-grid">
+  @for (word of words(); track word) {
+    <div class="word-card" (click)="wordClick.emit(word)">
+      {{ word | truncate: 25 }}
+    </div>
+  }
+</div>

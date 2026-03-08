@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/dictionary/components/word-grid.component.scss"],
+  "sourcesContent": [".word-grid {\r\n  display: grid;\r\n  grid-template-columns: repeat(3, 1fr);\r\n  gap: 0.5rem;\r\n}\r\n\r\n.word-card {\r\n  padding: 0.5rem 0.75rem;\r\n  background: white;\r\n  border: 1px solid #e5e7eb;\r\n  border-radius: 6px;\r\n  cursor: pointer;\r\n  text-align: center;\r\n  transition: background 0.15s, border-color 0.15s;\r\n}\r\n\r\n.word-card:hover {\r\n  background: #eff6ff;\r\n  border-color: #3b82f6;\r\n}\r\n\r\n@media (max-width: 640px) {\r\n  .word-grid {\r\n    grid-template-columns: repeat(2, 1fr);\r\n  }\r\n}\r\n"],
+  "mappings": ";AAAA,CAAA;AACE,WAAA;AACA,yBAAA,OAAA,CAAA,EAAA;AACA,OAAA;;AAGF,CAAA;AACE,WAAA,OAAA;AACA,cAAA;AACA,UAAA,IAAA,MAAA;AACA,iBAAA;AACA,UAAA;AACA,cAAA;AACA,cAAA,WAAA,KAAA,EAAA,aAAA;;AAGF,CAVA,SAUA;AACE,cAAA;AACA,gBAAA;;AAGF,OAAA,CAAA,SAAA,EAAA;AACE,GAtBF;AAuBI,2BAAA,OAAA,CAAA,EAAA;;;",
+  "names": []
+}

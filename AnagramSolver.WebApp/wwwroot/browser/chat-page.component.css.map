@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/ai-chat/containers/chat-page.component.scss"],
+  "sourcesContent": [".chat-header {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  align-items: center;\r\n}\r\n\r\n.chat-container {\r\n  margin-bottom: 0;\r\n}\r\n\r\n.chat-error {\r\n  margin-top: 0.5rem;\r\n  padding: 0.5rem;\r\n  background: #fef2f2;\r\n  color: #dc2626;\r\n  border-radius: 6px;\r\n  font-size: 0.875rem;\r\n}\r\n"],
+  "mappings": ";AAAA,CAAA;AACE,WAAA;AACA,mBAAA;AACA,eAAA;;AAGF,CAAA;AACE,iBAAA;;AAGF,CAAA;AACE,cAAA;AACA,WAAA;AACA,cAAA;AACA,SAAA;AACA,iBAAA;AACA,aAAA;;",
+  "names": []
+}

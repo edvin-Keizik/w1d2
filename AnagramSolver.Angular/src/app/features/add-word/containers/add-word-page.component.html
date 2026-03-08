@@ -1,0 +1,23 @@
+<h1 class="page-title">Add Word to Dictionary</h1>
+
+<app-word-form
+  [minLength]="settings.settings()?.minWordLength ?? 3"
+  [isLoading]="dictSvc.addWordState().stage === 'loading'"
+  (submitWord)="onSubmit($event)"
+/>
+
+@switch (dictSvc.addWordState().stage) {
+  @case ('loading') {
+    <app-loading-spinner />
+  }
+  @case ('loaded') {
+    <div class="card success-msg">
+      <p>Word added successfully!</p>
+      <button class="btn btn-secondary" (click)="addAnother()">Add Another</button>
+      <button class="btn btn-primary" (click)="goToDictionary()">Go to Dictionary</button>
+    </div>
+  }
+  @case ('error') {
+    <app-error-display [message]="errorMsg()" (retry)="onRetry()" />
+  }
+}
