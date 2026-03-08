@@ -1,0 +1,21 @@
+<h1 class="page-title">Frequency Analysis</h1>
+
+<app-analysis-form
+  [isLoading]="analysisSvc.state().stage === 'loading'"
+  (analyze)="onAnalyze($event)"
+/>
+
+@switch (analysisSvc.state().stage) {
+  @case ('idle') {
+    <app-empty-state message="Enter text above to analyze word frequency" />
+  }
+  @case ('loading') {
+    <app-loading-spinner />
+  }
+  @case ('loaded') {
+    <app-analysis-results [data]="loadedData()" />
+  }
+  @case ('error') {
+    <app-error-display [message]="errorMsg()" (retry)="onRetry()" />
+  }
+}

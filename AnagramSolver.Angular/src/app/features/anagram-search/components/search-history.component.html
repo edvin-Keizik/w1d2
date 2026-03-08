@@ -1,0 +1,16 @@
+@if (history().length > 0) {
+  <div class="card history">
+    <div class="history-header">
+      <h3>Search History</h3>
+      <button class="btn btn-secondary btn-sm" (click)="clearHistory.emit()">Clear</button>
+    </div>
+    <ul class="history-list">
+      @for (item of history(); track $index) {
+        <li (click)="selectWord.emit(item.word)">
+          <span class="word">{{ item.word }}</span>
+          <span class="meta">{{ item.resultCount }} results &middot; {{ item.searchedAt | timeAgo }}</span>
+        </li>
+      }
+    </ul>
+  </div>
+}

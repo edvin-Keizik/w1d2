@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/analysis/components/analysis-results.component.scss"],
+  "sourcesContent": [".stats-grid {\r\n  display: grid;\r\n  grid-template-columns: repeat(3, 1fr);\r\n  gap: 1rem;\r\n  margin: 1rem 0;\r\n}\r\n\r\n.stat {\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n  padding: 0.75rem;\r\n  background: #f9fafb;\r\n  border-radius: 6px;\r\n}\r\n\r\n.stat-value { font-size: 1.5rem; font-weight: 700; color: #3b82f6; }\r\n.stat-label { font-size: 0.75rem; color: #6b7280; }\r\n\r\n.freq-table {\r\n  width: 100%;\r\n  border-collapse: collapse;\r\n  margin-top: 0.5rem;\r\n}\r\n\r\n.freq-table th,\r\n.freq-table td {\r\n  padding: 0.5rem;\r\n  text-align: left;\r\n  border-bottom: 1px solid #e5e7eb;\r\n}\r\n\r\n.freq-table th { font-weight: 600; color: #374151; }\r\n.freq-table tr:hover td { background: #f9fafb; }\r\n"],
+  "mappings": ";AAAA,CAAA;AACE,WAAA;AACA,yBAAA,OAAA,CAAA,EAAA;AACA,OAAA;AACA,UAAA,KAAA;;AAGF,CAAA;AACE,WAAA;AACA,kBAAA;AACA,eAAA;AACA,WAAA;AACA,cAAA;AACA,iBAAA;;AAGF,CAAA;AAAc,aAAA;AAAmB,eAAA;AAAkB,SAAA;;AACnD,CAAA;AAAc,aAAA;AAAoB,SAAA;;AAElC,CAAA;AACE,SAAA;AACA,mBAAA;AACA,cAAA;;AAGF,CANA,WAMA;AAAA,CANA,WAMA;AAEE,WAAA;AACA,cAAA;AACA,iBAAA,IAAA,MAAA;;AAGF,CAbA,WAaA;AAAiB,eAAA;AAAkB,SAAA;;AACnC,CAdA,WAcA,EAAA,OAAA;AAA0B,cAAA;;",
+  "names": []
+}

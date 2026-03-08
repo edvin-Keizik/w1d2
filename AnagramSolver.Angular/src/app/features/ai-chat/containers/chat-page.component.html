@@ -1,0 +1,17 @@
+<div class="chat-header">
+  <h1 class="page-title">AI Chat</h1>
+  <button class="btn btn-secondary" (click)="chatSvc.startNewSession()">New Session</button>
+</div>
+
+<div class="chat-container" #chatContainer>
+  <app-chat-window [messages]="chatSvc.messages()" />
+</div>
+
+<app-chat-input
+  [isSending]="chatSvc.sendState().stage === 'loading'"
+  (sendMessage)="chatSvc.send($event)"
+/>
+
+@if (chatSvc.sendState().stage === 'error') {
+  <div class="chat-error">{{ chatErrorMsg() }}</div>
+}

@@ -1,0 +1,4 @@
+<div class="bubble" [class.user]="message().role === 'user'" [class.assistant]="message().role !== 'user'">
+  <div class="bubble-content">{{ message().content }}</div>
+  <div class="bubble-meta">{{ message().timestamp * 1000 | timeAgo }}</div>
+</div>

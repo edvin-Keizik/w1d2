@@ -1,0 +1,38 @@
+<div class="card results">
+  <h3>Analysis Results</h3>
+
+  <div class="stats-grid">
+    <div class="stat">
+      <span class="stat-value">{{ data().totalWordCount }}</span>
+      <span class="stat-label">Total Words</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">{{ data().uniqueWordCount }}</span>
+      <span class="stat-label">Unique Words</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">{{ data().longestWord }}</span>
+      <span class="stat-label">Longest Word</span>
+    </div>
+  </div>
+
+  <h4>Top Words</h4>
+  <table class="freq-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Word</th>
+        <th>Frequency</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of data().topWords; track item.word; let i = $index) {
+        <tr>
+          <td>{{ i + 1 }}</td>
+          <td>{{ item.word }}</td>
+          <td>{{ item.frequency }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,12 @@
+<nav class="navbar">
+  <a class="navbar-brand" routerLink="/search">AnagramSolver</a>
+  <button class="menu-toggle" (click)="menuOpen = !menuOpen">☰</button>
+  <ul class="nav-links" [class.open]="menuOpen">
+    <li><a routerLink="/search" routerLinkActive="active" (click)="menuOpen = false">Search</a></li>
+    <li><a routerLink="/dictionary" routerLinkActive="active" (click)="menuOpen = false">Dictionary</a></li>
+    <li><a routerLink="/add-word" routerLinkActive="active" (click)="menuOpen = false">Add Word</a></li>
+    <li><a routerLink="/analysis" routerLinkActive="active" (click)="menuOpen = false">Analysis</a></li>
+    <li><a routerLink="/chat" routerLinkActive="active" (click)="menuOpen = false">AI Chat</a></li>
+    <li><a routerLink="/chat/history" routerLinkActive="active" (click)="menuOpen = false">History</a></li>
+  </ul>
+</nav>

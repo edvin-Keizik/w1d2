@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/ai-chat/components/chat-window.component.scss"],
+  "sourcesContent": [".chat-window {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 0.75rem;\r\n  padding: 1rem;\r\n  max-height: 500px;\r\n  overflow-y: auto;\r\n  background: #f9fafb;\r\n  border-radius: 8px;\r\n  border: 1px solid #e5e7eb;\r\n}\r\n\r\n.chat-empty {\r\n  text-align: center;\r\n  color: #9ca3af;\r\n  padding: 3rem;\r\n}\r\n"],
+  "mappings": ";AAAA,CAAA;AACE,WAAA;AACA,kBAAA;AACA,OAAA;AACA,WAAA;AACA,cAAA;AACA,cAAA;AACA,cAAA;AACA,iBAAA;AACA,UAAA,IAAA,MAAA;;AAGF,CAAA;AACE,cAAA;AACA,SAAA;AACA,WAAA;;",
+  "names": []
+}

@@ -1,0 +1,8 @@
+<div class="results card">
+  <h3>Results ({{ results().length }})</h3>
+  <ul class="result-list">
+    @for (word of results(); track word) {
+      <li [innerHTML]="word | highlight: searchTerm()"></li>
+    }
+  </ul>
+</div>

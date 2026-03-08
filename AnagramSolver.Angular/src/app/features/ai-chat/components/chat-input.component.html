@@ -1,0 +1,19 @@
+<form class="chat-input" (ngSubmit)="onSend()">
+  <input
+    type="text"
+    [formControl]="messageControl"
+    placeholder="Type a message..."
+    (keydown.enter)="onSend(); $event.preventDefault()"
+  />
+  <button
+    type="submit"
+    class="btn btn-primary"
+    [disabled]="messageControl.invalid || isSending()"
+  >
+    @if (isSending()) {
+      ...
+    } @else {
+      Send
+    }
+  </button>
+</form>

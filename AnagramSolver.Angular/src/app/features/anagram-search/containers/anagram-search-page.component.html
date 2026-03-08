@@ -1,0 +1,32 @@
+<h1 class="page-title">Anagram Search</h1>
+
+<app-search-form
+  [minLength]="settings.settings()?.minWordLength ?? 3"
+  [isLoading]="anagramSvc.state().stage === 'loading'"
+  (search)="onSearch($event)"
+/>
+
+@switch (anagramSvc.state().stage) {
+  @case ('idle') {
+    <app-empty-state message="Enter a word above to search for anagrams" />
+  }
+  @case ('loading') {
+    <app-loading-spinner />
+  }
+  @case ('loaded') {
+    @if (loadedData().length === 0) {
+      <app-empty-state message="No anagrams found for this word" />
+    } @else {
+      <app-search-results [results]="loadedData()" [searchTerm]="lastSearch()" />
+    }
+  }
+  @case ('error') {
+    <app-error-display [message]="errorMsg()" (retry)="onRetry()" />
+  }
+}
+
+<app-search-history
+  [history]="anagramSvc.searchHistory()"
+  (selectWord)="onSearch($event)"
+  (clearHistory)="anagramSvc.clearHistory()"
+/>

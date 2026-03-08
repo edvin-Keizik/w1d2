@@ -1,0 +1,17 @@
+<nav class="pagination">
+  <button
+    class="page-btn"
+    [disabled]="currentPage() <= 1"
+    (click)="pageChange.emit(currentPage() - 1)"
+  >
+    &laquo; Previous
+  </button>
+  <span class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</span>
+  <button
+    class="page-btn"
+    [disabled]="currentPage() >= totalPages()"
+    (click)="pageChange.emit(currentPage() + 1)"
+  >
+    Next &raquo;
+  </button>
+</nav>

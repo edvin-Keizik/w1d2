@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/core/services/notification.service.ts"],
+  "sourcesContent": ["import { Injectable, signal } from '@angular/core';\r\n\r\nexport interface Toast {\r\n  message: string;\r\n  type: 'success' | 'error' | 'info';\r\n  id: number;\r\n}\r\n\r\n@Injectable({ providedIn: 'root' })\r\nexport class NotificationService {\r\n  private _nextId = 0;\r\n  readonly toasts = signal<Toast[]>([]);\r\n\r\n  show(message: string, type: Toast['type'] = 'info'): void {\r\n    const id = this._nextId++;\r\n    this.toasts.update((t) => [...t, { message, type, id }]);\r\n    setTimeout(() => this.dismiss(id), 5000);\r\n  }\r\n\r\n  dismiss(id: number): void {\r\n    this.toasts.update((t) => t.filter((toast) => toast.id !== id));\r\n  }\r\n}\r\n"],
+  "mappings": ";;;;;;;;AASM,IAAO,sBAAP,MAAO,qBAAmB;EACtB,UAAU;EACT,SAAS,OAAgB,CAAA,CAAE;EAEpC,KAAK,SAAiB,OAAsB,QAAM;AAChD,UAAM,KAAK,KAAK;AAChB,SAAK,OAAO,OAAO,CAAC,MAAM,CAAC,GAAG,GAAG,EAAE,SAAS,MAAM,GAAE,CAAE,CAAC;AACvD,eAAW,MAAM,KAAK,QAAQ,EAAE,GAAG,GAAI;EACzC;EAEA,QAAQ,IAAU;AAChB,SAAK,OAAO,OAAO,CAAC,MAAM,EAAE,OAAO,CAAC,UAAU,MAAM,OAAO,EAAE,CAAC;EAChE;;qCAZW,sBAAmB;EAAA;4EAAnB,sBAAmB,SAAnB,qBAAmB,WAAA,YADN,OAAM,CAAA;;;sEACnB,qBAAmB,CAAA;UAD/B;WAAW,EAAE,YAAY,OAAM,CAAE;;;",
+  "names": []
+}

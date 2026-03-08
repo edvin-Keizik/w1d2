@@ -1,0 +1,31 @@
+<form class="card search-form" (ngSubmit)="onSubmit()">
+  <div class="form-group">
+    <label for="searchWord">Enter a word to find anagrams</label>
+    <input
+      id="searchWord"
+      type="text"
+      [formControl]="wordControl"
+      placeholder="Type a word..."
+      autocomplete="off"
+    />
+    @if (wordControl.invalid && wordControl.touched) {
+      @if (wordControl.hasError('required')) {
+        <div class="error-msg">Word is required</div>
+      }
+      @if (wordControl.hasError('minlength')) {
+        <div class="error-msg">Minimum {{ minLength() }} characters required</div>
+      }
+    }
+  </div>
+  <button
+    type="submit"
+    class="btn btn-primary"
+    [disabled]="wordControl.invalid || isLoading()"
+  >
+    @if (isLoading()) {
+      Searching...
+    } @else {
+      Search Anagrams
+    }
+  </button>
+</form>

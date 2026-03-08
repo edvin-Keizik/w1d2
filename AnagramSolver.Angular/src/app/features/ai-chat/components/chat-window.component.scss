@@ -1,0 +1,17 @@
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  max-height: 500px;
+  overflow-y: auto;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.chat-empty {
+  text-align: center;
+  color: #9ca3af;
+  padding: 3rem;
+}

@@ -1,0 +1,11 @@
+<div class="session-list">
+  @for (session of sessions(); track session) {
+    <div class="session-card">
+      <span class="session-id" (click)="select.emit(session)">{{ session }}</span>
+      <div class="session-actions">
+        <button class="btn btn-secondary btn-sm" (click)="select.emit(session)">View</button>
+        <button class="btn btn-danger btn-sm" (click)="deleteSession.emit(session)">Delete</button>
+      </div>
+    </div>
+  }
+</div>

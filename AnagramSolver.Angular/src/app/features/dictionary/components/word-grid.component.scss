@@ -1,0 +1,26 @@
+.word-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.word-card {
+  padding: 0.5rem 0.75rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.word-card:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+@media (max-width: 640px) {
+  .word-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

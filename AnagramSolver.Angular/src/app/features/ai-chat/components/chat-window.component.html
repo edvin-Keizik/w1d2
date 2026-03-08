@@ -1,0 +1,8 @@
+<div class="chat-window">
+  @if (messages().length === 0) {
+    <div class="chat-empty">Start a conversation with AI assistant</div>
+  }
+  @for (msg of messages(); track $index) {
+    <app-message-bubble [message]="msg" />
+  }
+</div>

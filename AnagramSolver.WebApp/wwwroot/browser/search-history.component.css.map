@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/anagram-search/components/search-history.component.scss"],
+  "sourcesContent": [".history-header {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  align-items: center;\r\n  margin-bottom: 0.75rem;\r\n}\r\n\r\n.btn-sm {\r\n  padding: 0.25rem 0.5rem;\r\n  font-size: 0.75rem;\r\n}\r\n\r\n.history-list {\r\n  list-style: none;\r\n}\r\n\r\n.history-list li {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  padding: 0.5rem 0;\r\n  border-bottom: 1px solid #f3f4f6;\r\n  cursor: pointer;\r\n}\r\n\r\n.history-list li:hover { background: #f9fafb; }\r\n.word { font-weight: 600; }\r\n.meta { color: #9ca3af; font-size: 0.8rem; }\r\n"],
+  "mappings": ";AAAA,CAAA;AACE,WAAA;AACA,mBAAA;AACA,eAAA;AACA,iBAAA;;AAGF,CAAA;AACE,WAAA,QAAA;AACA,aAAA;;AAGF,CAAA;AACE,cAAA;;AAGF,CAJA,aAIA;AACE,WAAA;AACA,mBAAA;AACA,WAAA,OAAA;AACA,iBAAA,IAAA,MAAA;AACA,UAAA;;AAGF,CAZA,aAYA,EAAA;AAAyB,cAAA;;AACzB,CAAA;AAAQ,eAAA;;AACR,CAAA;AAAQ,SAAA;AAAgB,aAAA;;",
+  "names": []
+}
