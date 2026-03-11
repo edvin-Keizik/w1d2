@@ -1,9 +1,10 @@
 <Solution>
-  <Project Path="AnagramSolver.BuisnessLogic/AnagramSolver.BusinessLogic.csproj" />
   <Project Path="AnagramSolver.BuisnessLogic.Tests/AnagramSolver.BusinessLogic.Tests.csproj" Id="fa008d7a-de69-4d59-a2f7-5a45aa4c5d46" />
+  <Project Path="AnagramSolver.BuisnessLogic/AnagramSolver.BusinessLogic.csproj" />
   <Project Path="AnagramSolver.Cli.Tests/AnagramSolver.Cli.Tests.csproj" Id="d9fbc0c1-4a40-48b1-9dd0-259ff1f32648" />
   <Project Path="AnagramSolver.Cli/AnagramSolver.Cli.csproj" />
   <Project Path="AnagramSolver.Contracts/AnagramSolver.Contracts.csproj" />
+  <Project Path="AnagramSolver.MAF/AnagramSolver.MAF.csproj" Id="b616783e-d788-4974-8d6f-d5eb093a74d9" />
   <Project Path="AnagramSolver.WebApp.Tests/AnagramSolver.WebApp.Tests.csproj" Id="c44c675e-52b4-49d5-9d2a-9ff58406ba18" />
   <Project Path="AnagramSolver.WebApp/AnagramSolver.WebApp.csproj" Id="67907e93-fb75-4630-913c-208a7f3ebed2" />
 </Solution>
